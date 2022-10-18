@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Eisenscript.Data_Structures;
 
 namespace Eisenscript
 {
@@ -8,8 +7,8 @@ namespace Eisenscript
         #region Private Variables
         private int _ich;
         private bool _isScanned;
-        private readonly List<Token> _tokens = new List<Token>();
-        private readonly List<TokenType> _mapCharToTokenType = new List<TokenType>();
+        private readonly List<Token> _tokens = new();
+        private readonly List<TokenType> _mapCharToTokenType = new();
         private readonly string _canonicalText;
         private bool _inMultilineComment;
         #endregion
@@ -178,7 +177,6 @@ namespace Eisenscript
                                 ichReadAhead++;
                             }
                             // We're now one beyond the end of the variable name
-                            var count = ichReadAhead - _ich;
                             var name = _canonicalText[_ich..ichReadAhead];
                             Advance(ichReadAhead, TokenType.Variable);
                             _tokens.Add(new Token(name));

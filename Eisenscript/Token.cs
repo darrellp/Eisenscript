@@ -58,10 +58,12 @@ namespace Eisenscript
         // ReSharper restore UnusedMember.Global
     }
 
-    internal struct Token
+    internal readonly struct Token
     {
+        // ReSharper disable RedundantDefaultMemberInitializer
         private readonly double _value = 0;
-        private string? _name = null;
+        private readonly string? _name = null;
+        // ReSharper restore RedundantDefaultMemberInitializer
 
         internal static readonly Trie<TokenType> Trie = new();
 
@@ -75,8 +77,6 @@ namespace Eisenscript
                 }
                 return _value;
             }
-
-            private init => _value = value;
         }
 
         internal string? Name
@@ -89,8 +89,6 @@ namespace Eisenscript
                 }
                 return _name;
             }
-
-            private set => _name = value;
         }
 
         static Token()
