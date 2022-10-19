@@ -94,6 +94,7 @@ white24
 base
 rules
 zzxxy
+_dog_cat
 ".Substring(2);
             TextReader tr = new StringReader(testScriptKeywords);
             var scanner = new Scan(tr);
@@ -127,6 +128,8 @@ zzxxy
             Assert.AreEqual("rules", tokens[iCur++].Name);
             Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
             Assert.AreEqual("zzxxy", tokens[iCur++].Name);
+            Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
+            Assert.AreEqual("_dog_cat", tokens[iCur++].Name);
         }
     }
 }

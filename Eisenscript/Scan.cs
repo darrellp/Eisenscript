@@ -165,13 +165,13 @@ namespace Eisenscript
                             // Not a keyword.  Must be a variable - go till we run out of alphanumeric chars
                             // or reach the end of the text
 
-                            // Variables better start with a letter
-                            if (!char.IsLetter(Cur))
+                            // Variables better start with a letter or underscore
+                            if (!char.IsLetter(Cur) && Cur != '_')
                             {
                                 throw new InvalidOperationException("Variables have to start with letters");
                             }
 
-                            while (char.IsLetterOrDigit(_canonicalText[ichReadAhead]) &&
+                            while ((char.IsLetterOrDigit(_canonicalText[ichReadAhead]) || _canonicalText[ichReadAhead] == '_') &&
                                    ichReadAhead != _canonicalText.Length)
                             {
                                 ichReadAhead++;
