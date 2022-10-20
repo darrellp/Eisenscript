@@ -5,7 +5,9 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Eisenscript", "Eisenscript\Eisenscript.csproj", "{C2CBAFD6-5326-4AE2-ABDD-6B3DCDD95D1F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEisenscript", "TestEisenscript\TestEisenscript.csproj", "{76E2A51E-8537-4203-BAEC-C62B128692A2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestEisenscript", "TestEisenscript\TestEisenscript.csproj", "{76E2A51E-8537-4203-BAEC-C62B128692A2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9999AE13-62E9-48CA-AAEC-E75BE9DD9EA1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -11,11 +11,13 @@ namespace Eisenscript
         private readonly List<TokenType> _mapCharToTokenType = new();
         private readonly string _canonicalText;
         private bool _inMultilineComment;
+        private int _iToken = 0;
         #endregion
 
         #region Properties
+        internal bool Done => _iToken == _tokens.Count;
         private char Cur => _canonicalText[_ich];
-        private char Peek => _ich < _canonicalText.Length - 1 ? _canonicalText[_ich + 1] : ' ';
+        private char ScanPeek => _ich < _canonicalText.Length - 1 ? _canonicalText[_ich + 1] : ' ';
         private bool FinishedLine => _ich >= _canonicalText.Length || _canonicalText[_ich] == '\n';
         internal List<Token> Tokens
         {
@@ -40,6 +42,7 @@ namespace Eisenscript
         internal Scan(TextReader input)
         {
             _canonicalText = Canonize(input);
+            EnsureScan();
         }
 
         private static string Canonize(TextReader input)
@@ -73,13 +76,13 @@ namespace Eisenscript
             }
         }
 
-        private void Advance(TokenType type)
+        private void AdvanceScan(TokenType type)
         {
             _mapCharToTokenType.Add(type);
             _ich++;
         }
 
-        private void Advance(int newPosition, TokenType type)
+        private void AdvanceScan(int newPosition, TokenType type)
         {
             var count = newPosition - _ich;
             _mapCharToTokenType.AddRange(Enumerable.Repeat(type, count));
@@ -106,7 +109,7 @@ namespace Eisenscript
 
                 if (char.IsWhiteSpace(Cur))
                 {
-                    Advance(TokenType.White);
+                    AdvanceScan(TokenType.White);
                 }
 
                 // Okay - not in comments, not at the end of the line,
@@ -120,19 +123,19 @@ namespace Eisenscript
                     while (char.IsDigit(Cur))
                     {
                         valInt = valInt * 10 + Cur - '0';
-                        Advance(TokenType.Number);
+                        AdvanceScan(TokenType.Number);
                     }
 
                     if (Cur == '.')
                     {
-                        Advance(TokenType.Number);
+                        AdvanceScan(TokenType.Number);
                         var decimalVal = 0.1;
 
                         while (char.IsDigit(Cur))
                         {
                             valFrac += (Cur - '0') * decimalVal;
                             decimalVal /= 10.0;
-                            Advance(TokenType.Number);
+                            AdvanceScan(TokenType.Number);
                         }
                     }
                     _tokens.Add(new Token(valInt + valFrac));
@@ -153,7 +156,7 @@ namespace Eisenscript
                             if (ichReadAhead == _canonicalText.Length ||
                                 !char.IsLetterOrDigit(_canonicalText[ichReadAhead]))
                             {
-                                Advance(ichReadAhead, tokenType);
+                                AdvanceScan(ichReadAhead, tokenType);
                                 _tokens.Add(new Token(tokenType));
                                 break;
                             }
@@ -168,7 +171,7 @@ namespace Eisenscript
                             // Variables better start with a letter or underscore
                             if (!char.IsLetter(Cur) && Cur != '_')
                             {
-                                throw new InvalidOperationException("Variables have to start with letters");
+                                throw new ParserException("Variables have to start with letters");
                             }
 
                             while ((char.IsLetterOrDigit(_canonicalText[ichReadAhead]) || _canonicalText[ichReadAhead] == '_') &&
@@ -178,7 +181,7 @@ namespace Eisenscript
                             }
                             // We're now one beyond the end of the variable name
                             var name = _canonicalText[_ich..ichReadAhead];
-                            Advance(ichReadAhead, TokenType.Variable);
+                            AdvanceScan(ichReadAhead, TokenType.Variable);
                             _tokens.Add(new Token(name));
                             break;
                         }
@@ -192,7 +195,7 @@ namespace Eisenscript
             }
 
             // Skip final '\n' of line (or add a space if we're at EOF which is fine)
-            Advance(TokenType.White);
+            AdvanceScan(TokenType.White);
         }
         #endregion
 
@@ -201,10 +204,10 @@ namespace Eisenscript
         {
             while (true)
             {
-                if (Cur == '*' && Peek == '/')
+                if (Cur == '*' && ScanPeek == '/')
                 {
-                    Advance(TokenType.Comment);      // over '*'
-                    Advance(TokenType.Comment);      // over '/'
+                    AdvanceScan(TokenType.Comment);      // over '*'
+                    AdvanceScan(TokenType.Comment);      // over '/'
                     _inMultilineComment = false;
                     break;
                 }
@@ -212,7 +215,7 @@ namespace Eisenscript
                 {
                     break;
                 }
-                Advance(TokenType.Comment);
+                AdvanceScan(TokenType.Comment);
             }
         }
 
@@ -223,26 +226,95 @@ namespace Eisenscript
                 return;
             }
 
-            if (Peek == '/')
+            if (ScanPeek == '/')
             {
-                Advance(TokenType.Comment);      // over '/'
-                Advance(TokenType.Comment);      // over '/'
+                AdvanceScan(TokenType.Comment);      // over '/'
+                AdvanceScan(TokenType.Comment);      // over '/'
 
                 while (!FinishedLine)
                 {
-                    Advance(TokenType.Comment);
+                    AdvanceScan(TokenType.Comment);
                 }
             }
-            else if (Peek == '*')
+            else if (ScanPeek == '*')
             {
-                Advance(TokenType.Comment);      // over '/'
-                Advance(TokenType.Comment);      // over '*'
+                AdvanceScan(TokenType.Comment);      // over '/'
+                AdvanceScan(TokenType.Comment);      // over '*'
 
                 _inMultilineComment = true;
                 FindMlcEnd();
             }
         }
         #endregion
+        #endregion
+
+        #region Retrieval
+        internal void Advance()
+        {
+            _iToken++;
+        }
+
+        internal Token Next()
+        {
+            return _tokens[_iToken++];
+        }
+
+        internal int? TryNextInt()
+        {
+            if (Peek().Type != TokenType.Number)
+            {
+                return null;
+            }
+
+            return (int)Math.Round(Consume(TokenType.Number).Value);
+        }
+        internal int NextInt()
+        {
+            if (Peek().Type != TokenType.Number)
+            {
+                    throw new ParserException("Expected Integer");
+            }
+
+            return (int)Math.Round(Consume(TokenType.Number).Value);
+        }
+
+        internal double? TryNextDouble()
+        {
+            if (Peek().Type != TokenType.Number)
+            {
+                return null;
+            }
+
+            return Consume(TokenType.Number).Value;
+        }
+
+        internal double NextDouble()
+        {
+            if (Peek().Type != TokenType.Number)
+            {
+                throw new ParserException("Expected Float");
+            }
+
+            return Consume(TokenType.Number).Value;
+        }
+
+        internal Token Consume(TokenType tt)
+        {
+            var ret = _tokens[_iToken++];
+            if (ret.Type == tt)
+            {
+                return ret;
+            }
+            else
+            {
+                throw new ParserException("Unexpected Token");
+            }
+        }
+
+        internal Token Peek()
+        {
+            return _tokens[_iToken];
+        }
         #endregion
     }
 }

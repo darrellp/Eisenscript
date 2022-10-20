@@ -73,7 +73,7 @@ namespace Eisenscript
             {
                 if (Type != TokenType.Number)
                 {
-                    throw new InvalidOperationException("Trying to get value from non-numeric token");
+                    throw new ParserException("Trying to get value from non-numeric token");
                 }
                 return _value;
             }
@@ -85,7 +85,7 @@ namespace Eisenscript
             {
                 if (Type != TokenType.Variable)
                 {
-                    throw new InvalidOperationException("Trying to get name from non-variable token");
+                    throw new ParserException("Trying to get name from non-variable token");
                 }
                 return _name;
             }
