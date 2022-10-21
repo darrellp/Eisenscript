@@ -74,7 +74,7 @@ namespace Eisenscript
 
         private void ParseRule(Rules rules)
         {
-
+            
         }
     }
 }

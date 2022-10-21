@@ -8,5 +8,14 @@ namespace Eisenscript
 {
     internal class Rule
     {
+        private string _name;
+        private double _weight;
+        private List<RuleAction> _actions = new();
+
+        public Rule(string name, double weight)
+        {
+            _name = name;
+            _weight = weight;
+        }
     }
 }
