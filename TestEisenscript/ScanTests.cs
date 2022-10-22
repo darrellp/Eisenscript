@@ -21,7 +21,7 @@ namespace TestEisenscript
 123 456/* 1
 2 */789  
 1 2 3 4
-3.141592654 .12".Substring(2);
+3.141592654 -.12".Substring(2);
             TextReader tr = new StringReader(testScriptNumbers);
             var scanner = new Scan(tr);
             var charTypes = scanner.MapCharTo;
@@ -37,7 +37,7 @@ namespace TestEisenscript
             Assert.IsTrue(tokens[6].Type == TokenType.Number && tokens[6].Value == 4);
             // ReSharper restore CompareOfFloatsByEqualityOperator
             Assert.IsTrue(tokens[7].Type == TokenType.Number && Math.Abs(tokens[7].Value - 3.141592654) < 0.00001);
-            Assert.IsTrue(tokens[8].Type == TokenType.Number && Math.Abs(tokens[8].Value - 0.12) < 0.001);
+            Assert.IsTrue(tokens[8].Type == TokenType.Number && Math.Abs(tokens[8].Value + 0.12) < 0.001);
         }
 
         [TestMethod]
@@ -46,13 +46,13 @@ namespace TestEisenscript
             string testScriptMlc = @"
 /*234567*/
   /*567
-90123*/   ".Substring(2);
+90123*//*13*/   ".Substring(2);
 
             bool[] IsComment =
             {
                 T, T, T, T, T, T, T, T, T, T, F,
                 F, F, T, T, T, T, T, F,
-                T, T, T, T, T, T, T, F, F, F,
+                T, T, T, T, T, T, T, T, T, T, T, T, T, F, F, F,
                 F
             };
             TextReader tr = new StringReader(testScriptMlc);
@@ -83,7 +83,7 @@ namespace TestEisenscript
         public void TestKeywordsVariables()
         {
             string testScriptKeywords = @"
-*/-+ #define {} md w b a set rule maxdepth
+* #define {} md w b a set rule maxdepth
 maxobjects minsize maxsize seed initial background weight
 x y z rx ry rz s m fx fy fz hue sat brightness alpha color
 blend random colorpool box grid sphere line point triangle
@@ -101,18 +101,15 @@ _dog_cat
             var charTypes = scanner.MapCharTo;
             var tokens = scanner.Tokens;
             Assert.AreEqual(TokenType.Mult, tokens[0].Type);
-            Assert.AreEqual(TokenType.Div, tokens[1].Type);
-            Assert.AreEqual(TokenType.Minus, tokens[2].Type);
-            Assert.AreEqual(TokenType.Plus, tokens[3].Type);
-            Assert.AreEqual(TokenType.Define, tokens[4].Type);
-            Assert.AreEqual(TokenType.OpenBrace, tokens[5].Type);
-            Assert.AreEqual(TokenType.CloseBrace, tokens[6].Type);
-            Assert.AreEqual(TokenType.MaxDepth, tokens[7].Type);
-            Assert.AreEqual(TokenType.Weight, tokens[8].Type);
-            Assert.AreEqual(TokenType.Brightness, tokens[9].Type);
-            Assert.AreEqual(TokenType.Alpha, tokens[10].Type);
+            Assert.AreEqual(TokenType.Define, tokens[1].Type);
+            Assert.AreEqual(TokenType.OpenBrace, tokens[2].Type);
+            Assert.AreEqual(TokenType.CloseBrace, tokens[3].Type);
+            Assert.AreEqual(TokenType.MaxDepth, tokens[4].Type);
+            Assert.AreEqual(TokenType.Weight, tokens[5].Type);
+            Assert.AreEqual(TokenType.Brightness, tokens[6].Type);
+            Assert.AreEqual(TokenType.Alpha, tokens[7].Type);
 
-            var offset = 11 - (int)TokenType.Set;
+            var offset = 8 - (int)TokenType.Set;
 
             for (var i = (int)TokenType.Set; i < (int)TokenType.End; i++)
             {

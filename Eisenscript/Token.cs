@@ -8,9 +8,6 @@ namespace Eisenscript
         White,
         Comment,
         Mult,
-        Minus,
-        Plus,
-        Div,
         Define,
         OpenBrace,
         CloseBrace,
@@ -95,9 +92,6 @@ namespace Eisenscript
         {
             // Tokens whose name isn't the same as the string
             Trie.Insert("*", TokenType.Mult);
-            Trie.Insert("/", TokenType.Div);
-            Trie.Insert("-", TokenType.Minus);
-            Trie.Insert("+", TokenType.Plus);
             Trie.Insert("#define", TokenType.Define);
             Trie.Insert("{", TokenType.OpenBrace);
             Trie.Insert("}", TokenType.CloseBrace);

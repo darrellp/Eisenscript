@@ -95,11 +95,19 @@ namespace Eisenscript
             {
                 if (_inMultilineComment)
                 {
-                    FindMlcEnd();
+                    if (FindMlcEnd())
+                    {
+                        continue;
+                    }
                 }
-                else
+                else if (IsCommentToEol())
                 {
-                    CheckComment();
+                    break;
+                }
+
+                while (!FinishedLine && char.IsWhiteSpace(Cur))
+                {
+                    AdvanceScan(TokenType.White);
                 }
 
                 if (FinishedLine)
@@ -107,100 +115,120 @@ namespace Eisenscript
                     break;
                 }
 
-                if (char.IsWhiteSpace(Cur))
+                if (IsNumber())
                 {
-                    AdvanceScan(TokenType.White);
+                    continue;
                 }
 
-                // Okay - not in comments, not at the end of the line,
-                // not white space - time to do real work
-
-                else if (char.IsDigit(Cur) || Cur == '.')
-                {
-                    var valInt = 0.0;
-                    var valFrac = 0.0;
-
-                    while (char.IsDigit(Cur))
-                    {
-                        valInt = valInt * 10 + Cur - '0';
-                        AdvanceScan(TokenType.Number);
-                    }
-
-                    if (Cur == '.')
-                    {
-                        AdvanceScan(TokenType.Number);
-                        var decimalVal = 0.1;
-
-                        while (char.IsDigit(Cur))
-                        {
-                            valFrac += (Cur - '0') * decimalVal;
-                            decimalVal /= 10.0;
-                            AdvanceScan(TokenType.Number);
-                        }
-                    }
-                    _tokens.Add(new Token(valInt + valFrac));
-                }
-                else
-                {
-                    var ichReadAhead = _ich;
-                    Token.Trie.ResetSearch();
-
-                    while (true)
-                    {
-                        var (tokenType, fStop, fFound) = Token.Trie.Search(_canonicalText[ichReadAhead++]);
-                        if (fFound)
-                        {
-                            // We found a keyword.  If it's not the prefix of something longer,
-                            // report it.  Note that due to post-incrementing, ichReadAhead is
-                            // pointing one char after the last letter in the keyword.
-                            if (ichReadAhead == _canonicalText.Length ||
-                                !char.IsLetterOrDigit(_canonicalText[ichReadAhead]))
-                            {
-                                AdvanceScan(ichReadAhead, tokenType);
-                                _tokens.Add(new Token(tokenType));
-                                break;
-                            }
-
-                            continue;
-                        }
-                        if (fStop)
-                        {
-                            // Not a keyword.  Must be a variable - go till we run out of alphanumeric chars
-                            // or reach the end of the text
-
-                            // Variables better start with a letter or underscore
-                            if (!char.IsLetter(Cur) && Cur != '_')
-                            {
-                                throw new ParserException("Variables have to start with letters");
-                            }
-
-                            while ((char.IsLetterOrDigit(_canonicalText[ichReadAhead]) || _canonicalText[ichReadAhead] == '_') &&
-                                   ichReadAhead != _canonicalText.Length)
-                            {
-                                ichReadAhead++;
-                            }
-                            // We're now one beyond the end of the variable name
-                            var name = _canonicalText[_ich..ichReadAhead];
-                            AdvanceScan(ichReadAhead, TokenType.Variable);
-                            _tokens.Add(new Token(name));
-                            break;
-                        }
-                    }
-
-                    if (FinishedLine)
-                    {
-                        break;
-                    }
-                }
+                IsKeywordOrVariable();
             }
 
             // Skip final '\n' of line (or add a space if we're at EOF which is fine)
             AdvanceScan(TokenType.White);
         }
+
+        #region Keywords/variables
+        private bool IsKeywordOrVariable()
+        {
+            if (Cur == '/')
+            {
+                // Forget about comments
+                return false;
+            }
+            var ichReadAhead = _ich;
+            Token.Trie.ResetSearch();
+
+            while (true)
+            {
+                var (tokenType, fStop, fFound) = Token.Trie.Search(_canonicalText[ichReadAhead++]);
+                if (fFound)
+                {
+                    // We found a keyword.  If it's not the prefix of something longer,
+                    // report it.  Note that due to post-incrementing, ichReadAhead is
+                    // pointing one char after the last letter in the keyword.
+                    if (ichReadAhead == _canonicalText.Length ||
+                        !char.IsLetterOrDigit(_canonicalText[ichReadAhead]))
+                    {
+                        AdvanceScan(ichReadAhead, tokenType);
+                        _tokens.Add(new Token(tokenType));
+                        return true;
+                    }
+
+                    continue;
+                }
+
+                if (fStop)
+                {
+                    // Not a keyword.  Must be a variable - go till we run out of alphanumeric chars
+                    // or reach the end of the text
+
+                    // Variables better start with a letter or underscore
+                    if (!char.IsLetter(Cur) && Cur != '_')
+                    {
+                        throw new ParserException("Variables must start with letters or underscores");
+                    }
+
+                    while ((char.IsLetterOrDigit(_canonicalText[ichReadAhead]) || _canonicalText[ichReadAhead] == '_') &&
+                           ichReadAhead != _canonicalText.Length)
+                    {
+                        ichReadAhead++;
+                    }
+
+                    // We're now one beyond the end of the variable name
+                    var name = _canonicalText[_ich..ichReadAhead];
+                    AdvanceScan(ichReadAhead, TokenType.Variable);
+                    _tokens.Add(new Token(name));
+                    return true;
+                }
+            }
+        }
+        #endregion
+
+        #region Numbers
+        private bool IsNumber()
+        {
+            var sign = 1.0;
+
+            // TODO: scan negatives
+            if (!char.IsDigit(Cur) && Cur != '.' && Cur != '-')
+            {
+                return false;
+            }
+            var valInt = 0.0;
+            var valFrac = 0.0;
+
+            if (Cur == '-')
+            {
+                AdvanceScan(TokenType.Number);
+                sign = -1;
+            }
+            while (char.IsDigit(Cur))
+            {
+                valInt = valInt * 10 + Cur - '0';
+                AdvanceScan(TokenType.Number);
+            }
+
+            if (Cur == '.')
+            {
+                AdvanceScan(TokenType.Number);
+                var decimalVal = 0.1;
+
+                while (char.IsDigit(Cur))
+                {
+                    valFrac += (Cur - '0') * decimalVal;
+                    decimalVal /= 10.0;
+                    AdvanceScan(TokenType.Number);
+                }
+            }
+
+            _tokens.Add(new Token(sign * (valInt + valFrac)));
+            return true;
+        }
+        #endregion
         #endregion
 
         #region Comments
-        private void FindMlcEnd()
+        private bool FindMlcEnd()
         {
             while (true)
             {
@@ -209,21 +237,21 @@ namespace Eisenscript
                     AdvanceScan(TokenType.Comment);      // over '*'
                     AdvanceScan(TokenType.Comment);      // over '/'
                     _inMultilineComment = false;
-                    break;
+                    return true;
                 }
                 else if (FinishedLine)
                 {
-                    break;
+                    return false;
                 }
                 AdvanceScan(TokenType.Comment);
             }
         }
 
-        private void CheckComment()
+        private bool IsCommentToEol()
         {
             if (Cur != '/')
             {
-                return;
+                return false;
             }
 
             if (ScanPeek == '/')
@@ -242,8 +270,14 @@ namespace Eisenscript
                 AdvanceScan(TokenType.Comment);      // over '*'
 
                 _inMultilineComment = true;
-                FindMlcEnd();
+                if (FindMlcEnd())
+                {
+                    // We haven't advanced to end of line so return false
+                    return false;
+                }
             }
+
+            return true;
         }
         #endregion
         #endregion
