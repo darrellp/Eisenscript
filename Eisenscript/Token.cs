@@ -7,6 +7,7 @@ namespace Eisenscript
         // ReSharper disable UnusedMember.Global
         White,
         Comment,
+        Error,
         Mult,
         Define,
         OpenBrace,

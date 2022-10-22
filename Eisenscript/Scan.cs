@@ -12,6 +12,7 @@ namespace Eisenscript
         private readonly string _canonicalText;
         private bool _inMultilineComment;
         private int _iToken = 0;
+        private List<ParserException> _exceptions = new();
         #endregion
 
         #region Properties
@@ -19,6 +20,7 @@ namespace Eisenscript
         private char Cur => _canonicalText[_ich];
         private char ScanPeek => _ich < _canonicalText.Length - 1 ? _canonicalText[_ich + 1] : ' ';
         private bool FinishedLine => _ich >= _canonicalText.Length || _canonicalText[_ich] == '\n';
+        internal List<ParserException> Exceptions => _exceptions;
         internal List<Token> Tokens
         {
             get
@@ -52,7 +54,7 @@ namespace Eisenscript
             while ((line = input.ReadLine()) != null)
             {
                 sb.Append(line);
-                sb.Append("\n");
+                sb.Append('\n');
             }
 
             return sb.ToString();
@@ -72,7 +74,20 @@ namespace Eisenscript
 
             while (_ich < _canonicalText.Length)
             {
-                ScanLine();
+                try
+                {
+                    ScanLine();
+                }
+                catch (ParserException e)
+                {
+                    _exceptions.Add(e);
+                    while (!FinishedLine)
+                    {
+                        AdvanceScan(TokenType.Error);
+                    }
+
+                    AdvanceScan(TokenType.White);
+                }
             }
         }
 
@@ -97,13 +112,14 @@ namespace Eisenscript
                 {
                     if (FindMlcEnd())
                     {
+                        // Could be in the middle of the line so keep scanning
                         continue;
                     }
-                }
-                else if (IsCommentToEol())
-                {
+                    // EOL without the MLC ending so go to next line
                     break;
                 }
+
+                CheckComment();
 
                 while (!FinishedLine && char.IsWhiteSpace(Cur))
                 {
@@ -115,6 +131,7 @@ namespace Eisenscript
                     break;
                 }
 
+                // Not comments or white space - start doing real stuff
                 if (IsNumber())
                 {
                     continue;
@@ -126,6 +143,7 @@ namespace Eisenscript
             // Skip final '\n' of line (or add a space if we're at EOF which is fine)
             AdvanceScan(TokenType.White);
         }
+        #endregion
 
         #region Keywords/variables
         private bool IsKeywordOrVariable()
@@ -189,7 +207,6 @@ namespace Eisenscript
         {
             var sign = 1.0;
 
-            // TODO: scan negatives
             if (!char.IsDigit(Cur) && Cur != '.' && Cur != '-')
             {
                 return false;
@@ -225,7 +242,6 @@ namespace Eisenscript
             return true;
         }
         #endregion
-        #endregion
 
         #region Comments
         private bool FindMlcEnd()
@@ -247,7 +263,7 @@ namespace Eisenscript
             }
         }
 
-        private bool IsCommentToEol()
+        private bool CheckComment()
         {
             if (Cur != '/')
             {

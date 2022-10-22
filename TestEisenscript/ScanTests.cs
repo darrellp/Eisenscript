@@ -95,6 +95,8 @@ base
 rules
 zzxxy
 _dog_cat
+squirrel @nog
+rabbit
 ".Substring(2);
             TextReader tr = new StringReader(testScriptKeywords);
             var scanner = new Scan(tr);
@@ -127,6 +129,11 @@ _dog_cat
             Assert.AreEqual("zzxxy", tokens[iCur++].Name);
             Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
             Assert.AreEqual("_dog_cat", tokens[iCur++].Name);
+            Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
+            Assert.AreEqual("squirrel", tokens[iCur++].Name);
+            Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
+            Assert.AreEqual("rabbit", tokens[iCur++].Name);
+            Assert.AreEqual(1, scanner.Exceptions.Count);
         }
     }
 }
