@@ -26,12 +26,17 @@ namespace Eisenscript
 
             while (!_scan.Done)
             {
-                if (!ParseSet(rules))
+                if (!ParseSet(rules) && !ParseRule(rules))
                 {
-                    ParseRule(rules);
+                    ParseStartingRule(rules);
                 }
             }
             return rules;
+        }
+
+        private void ParseStartingRule(Rules rules)
+        {
+            throw new NotImplementedException();
         }
 
         private bool ParseSet(Rules rules)
@@ -72,9 +77,16 @@ namespace Eisenscript
             return true;
         }
 
-        private void ParseRule(Rules rules)
+        private bool ParseRule(Rules rules)
         {
-            
+            if (_scan.Peek().Type != TokenType.Rule)
+            {
+                return false;
+            }
+
+            _scan.Consume(TokenType.Rule);
+
+            return true;
         }
     }
 }
