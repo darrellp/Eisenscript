@@ -13,6 +13,7 @@ namespace Eisenscript
         private bool _inMultilineComment;
         private int _iToken = 0;
         private List<ParserException> _exceptions = new();
+        private int _iLine = 0;
         #endregion
 
         #region Properties
@@ -88,6 +89,8 @@ namespace Eisenscript
 
                     AdvanceScan(TokenType.White);
                 }
+
+                _iLine++;
             }
         }
 
@@ -168,7 +171,7 @@ namespace Eisenscript
                         !char.IsLetterOrDigit(_canonicalText[ichReadAhead]))
                     {
                         AdvanceScan(ichReadAhead, tokenType);
-                        _tokens.Add(new Token(tokenType));
+                        _tokens.Add(new Token(tokenType, _iLine));
                         return true;
                     }
 
@@ -183,7 +186,7 @@ namespace Eisenscript
                     // Variables better start with a letter or underscore
                     if (!char.IsLetter(Cur) && Cur != '_')
                     {
-                        throw new ParserException("Variables must start with letters or underscores");
+                        throw new ParserException("Variables must start with letters or underscores", _iLine);
                     }
 
                     while ((char.IsLetterOrDigit(_canonicalText[ichReadAhead]) || _canonicalText[ichReadAhead] == '_') &&
@@ -195,7 +198,7 @@ namespace Eisenscript
                     // We're now one beyond the end of the variable name
                     var name = _canonicalText[_ich..ichReadAhead];
                     AdvanceScan(ichReadAhead, TokenType.Variable);
-                    _tokens.Add(new Token(name));
+                    _tokens.Add(new Token(name, _iLine));
                     return true;
                 }
             }
@@ -238,7 +241,7 @@ namespace Eisenscript
                 }
             }
 
-            _tokens.Add(new Token(sign * (valInt + valFrac)));
+            _tokens.Add(new Token(sign * (valInt + valFrac), _iLine));
             return true;
         }
         #endregion
@@ -322,7 +325,9 @@ namespace Eisenscript
         {
             if (Peek().Type != TokenType.Number)
             {
-                    throw new ParserException("Expected Integer");
+                var line = Peek().Line;
+                Advance();
+                throw new ParserException("Expected Integer", line);
             }
 
             return (int)Math.Round(Consume(TokenType.Number).Value);
@@ -342,7 +347,9 @@ namespace Eisenscript
         {
             if (Peek().Type != TokenType.Number)
             {
-                throw new ParserException("Expected Float");
+                var line = Peek().Line;
+                Advance();
+                throw new ParserException("Expected Float", line);
             }
 
             return Consume(TokenType.Number).Value;
@@ -357,7 +364,7 @@ namespace Eisenscript
             }
             else
             {
-                throw new ParserException("Unexpected Token");
+                throw new ParserException("Unexpected Token", ret.Line);
             }
         }
 

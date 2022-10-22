@@ -61,17 +61,19 @@ namespace Eisenscript
         // ReSharper disable RedundantDefaultMemberInitializer
         private readonly double _value = 0;
         private readonly string? _name = null;
+        private readonly int _line;
         // ReSharper restore RedundantDefaultMemberInitializer
 
         internal static readonly Trie<TokenType> Trie = new();
 
+        internal int Line => _line;
         internal double Value
         {
             get
             {
                 if (Type != TokenType.Number)
                 {
-                    throw new ParserException("Trying to get value from non-numeric token");
+                    throw new ParserException("Internal: Trying to get value from non-numeric token", _line);
                 }
                 return _value;
             }
@@ -83,7 +85,7 @@ namespace Eisenscript
             {
                 if (Type != TokenType.Variable)
                 {
-                    throw new ParserException("Trying to get name from non-variable token");
+                    throw new ParserException("Internal: Trying to get name from non-variable token", _line);
                 }
                 return _name;
             }
@@ -114,20 +116,23 @@ namespace Eisenscript
 
         internal TokenType Type { get; }
 
-        internal Token(TokenType type)
+        internal Token(TokenType type, int line)
         {
             Type = type;
+            _line = line;
         }
 
-        internal Token(double value)
+        internal Token(double value, int line)
         {
             Type = TokenType.Number;
             _value = value;
+            _line = line;
         }
-        internal Token(string name)
+        internal Token(string name, int line)
         {
             Type = TokenType.Variable;
             _name = name;
+            _line = line;
         }
     }
 }

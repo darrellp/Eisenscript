@@ -47,8 +47,8 @@ namespace Eisenscript
             }
 
             _scan.Advance();
-
-            switch (_scan.Next().Type)
+            var token = _scan.Next();
+            switch (token.Type)
             {
                 case TokenType.MaxDepth:
                     rules.MaxDepth = _scan.NextInt();
@@ -71,7 +71,7 @@ namespace Eisenscript
                     break;
 
                 default:
-                    throw new ParserException("Unexpected token after \"set\"");
+                    throw new ParserException("Unexpected token after \"set\"", token.Line);
             }
 
             return true;

@@ -2,6 +2,15 @@
 {
     internal class ParserException : Exception
     {
-        internal ParserException(string msg) : base(msg) {}
+        internal int ILine
+        {
+            get;
+            private set;
+        }
+
+        internal ParserException(string msg, int iLine) : base(msg)
+        {
+            ILine = iLine;
+        }
     }
 }

@@ -134,6 +134,7 @@ rabbit
             Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
             Assert.AreEqual("rabbit", tokens[iCur++].Name);
             Assert.AreEqual(1, scanner.Exceptions.Count);
+            Assert.AreEqual(12, scanner.Exceptions[0].ILine);
         }
     }
 }
