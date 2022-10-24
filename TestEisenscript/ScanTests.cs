@@ -1,8 +1,8 @@
 using System;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Eisenscript;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // TODO: Real error handling instead of just throws
 namespace TestEisenscript
@@ -77,6 +77,36 @@ namespace TestEisenscript
             var scanner = new Scan(tr);
             var charTypes = scanner.MapCharTo;
             Assert.IsTrue(charTypes.Zip(IsComment).All(p => !((p.First == TokenType.Comment) ^ p.Second)));
+        }
+
+        [TestMethod]
+        public void TestRgba()
+        {
+            string testRgbaSrc = @"
+SulfurYellow
+#fff
+#010203
+#ee010203
+#010020030
+#010002000300".Substring(2);
+
+            TextReader tr = new StringReader(testRgbaSrc);
+            var scanner = new Scan(tr);
+            var charTypes = scanner.MapCharTo.ToArray();
+            var tokens = scanner.Tokens.ToArray();
+            Assert.IsTrue(charTypes[..12].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[13..17].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[18..25].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[26..35].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[36..46].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[47..60].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(tokens[..].All(tk => tk.Type == TokenType.Rgba));
+            Assert.AreEqual(tokens[0], new Token(new RGBA(0xED, 0xFF, 0x21), 0));
+            Assert.AreEqual(tokens[1], new Token(new RGBA(0xFF, 0xFF, 0xFF), 1));
+            Assert.AreEqual(tokens[2], new Token(new RGBA(0x01, 0x02, 0x03), 2));
+            Assert.AreEqual(tokens[3], new Token(new RGBA(0x01, 0x02, 0x03, 0xEE), 3));
+            Assert.AreEqual(tokens[4], new Token(new RGBA(0x01, 0x02, 0x03), 4));
+            Assert.AreEqual(tokens[5], new Token(new RGBA(0x01, 0x02, 0x03), 5));
         }
 
         [TestMethod]

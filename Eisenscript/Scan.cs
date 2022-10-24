@@ -1,19 +1,30 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Reflection;
+using System.Text;
+using static System.Globalization.NumberStyles;
 
 namespace Eisenscript
 {
     internal class Scan
     {
+        #region Statics
+
+        private static readonly Dictionary<string, RGBA> _internetColors = new();
+        #endregion
+
         #region Private Variables
         private int _ich;
         private bool _isScanned;
         private readonly List<Token> _tokens = new();
+
+        // TODO: Probably implement the following list as a list of runs for efficiency and easier color coding
         private readonly List<TokenType> _mapCharToTokenType = new();
+
         private readonly string _canonicalText;
         private bool _inMultilineComment;
-        private int _iToken = 0;
+        private int _iToken;
         private List<ParserException> _exceptions = new();
-        private int _iLine = 0;
+        private int _iLine;
         #endregion
 
         #region Properties
@@ -42,6 +53,53 @@ namespace Eisenscript
         #endregion
 
         #region Constructor
+
+        static Scan()
+        {
+            using var stmColors = Assembly.GetExecutingAssembly().GetManifestResourceStream(
+                "Eisenscript.Data.Internet Colors.csv");
+            Debug.Assert(stmColors != null, nameof(stmColors) + " != null");
+            var trColors = new StreamReader(stmColors);
+            string? line;
+            while ((line = trColors.ReadLine()) != null)
+            {
+                var posComma = line.IndexOf(',');
+                var name = Humpify( line[..posComma]);
+                var val = line[(posComma + 2)..];
+                var r = byte.Parse(val[..2], HexNumber);
+                var g = byte.Parse(val[2..4], HexNumber);
+                var b = byte.Parse(val[4..], HexNumber);
+                _internetColors[name] = new RGBA(r, g, b);
+            }
+        }
+
+        static string Humpify(string str)
+        {
+            StringBuilder sb = new();
+            bool makeUC = true;
+
+            foreach (var ch in str)
+            {
+                if (ch == ' ')
+                {
+                    makeUC = true;
+                    continue;
+                }
+
+                var cur = ch;
+
+                if (makeUC)
+                {
+                    cur = char.ToUpper(cur);
+                    makeUC = false;
+                }
+
+                sb.Append(cur);
+            }
+
+            return sb.ToString();
+        }
+
         internal Scan(TextReader input)
         {
             _canonicalText = Canonize(input);
@@ -84,6 +142,10 @@ namespace Eisenscript
                     _exceptions.Add(e);
                     while (!FinishedLine)
                     {
+                        // TODO: This could skip over a MLC which continues to the next line.  Fix this.
+                        // Not something I'm WILDLY concerned about but it means we'll be in the middle
+                        // of a MLC on the next line expecting it to be normal code which could cause
+                        // a cascade of false positives for errors.
                         AdvanceScan(TokenType.Error);
                     }
 
@@ -93,20 +155,6 @@ namespace Eisenscript
                 _iLine++;
             }
         }
-
-        private void AdvanceScan(TokenType type)
-        {
-            _mapCharToTokenType.Add(type);
-            _ich++;
-        }
-
-        private void AdvanceScan(int newPosition, TokenType type)
-        {
-            var count = newPosition - _ich;
-            _mapCharToTokenType.AddRange(Enumerable.Repeat(type, count));
-            _ich = newPosition;
-        }
-
         private void ScanLine()
         {
             while (true)
@@ -140,11 +188,40 @@ namespace Eisenscript
                     continue;
                 }
 
+                if (IsRgba())
+                {
+                    continue;
+                }
+
                 IsKeywordOrVariable();
             }
 
             // Skip final '\n' of line (or add a space if we're at EOF which is fine)
             AdvanceScan(TokenType.White);
+        }
+        #endregion
+
+        #region Scanning utilities
+        private void AdvanceScan(TokenType type)
+        {
+            _mapCharToTokenType.Add(type);
+            _ich++;
+        }
+
+        private void AdvanceScan(int newPosition, TokenType type)
+        {
+            var count = newPosition - _ich;
+            _mapCharToTokenType.AddRange(Enumerable.Repeat(type, count));
+            _ich = newPosition;
+        }
+
+        private string PeekWord()
+        {
+            var ichReadAhead = _ich;
+
+            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) ;
+            // ichReadAhead is now one char beyond the end of our word
+            return _canonicalText[_ich..(ichReadAhead - 1)];
         }
         #endregion
 
@@ -246,6 +323,85 @@ namespace Eisenscript
         }
         #endregion
 
+        #region RGBA
+        private bool IsRgba()
+        {
+            var word = PeekWord();
+            var ret = false;
+
+            if (Cur == '#')
+            {
+                if (word == "#define")
+                {
+                    // special exception for #define
+                    return false;
+                }
+
+                byte r;
+                byte g;
+                byte b;
+                byte a = 0xff;
+
+                switch (word.Length)
+                {
+                    case 4:
+                        r = byte.Parse(word[1..2], HexNumber);
+                        // Turn 'f' into 'ff' for instance
+                        r = (byte)(17 * r);
+                        g = byte.Parse(word[2..3], HexNumber);
+                        g = (byte)(17 * g);
+                        b = byte.Parse(word[3..], HexNumber);
+                        b = (byte)(17 * b);
+                        break;
+
+                    case 7:
+                        r = byte.Parse(word[1..3], HexNumber);
+                        g = byte.Parse(word[3..5], HexNumber);
+                        b = byte.Parse(word[5..], HexNumber);
+                        break;
+
+                    case 9:
+                        a = byte.Parse(word[1..3], HexNumber);
+                        r = byte.Parse(word[3..5], HexNumber);
+                        g = byte.Parse(word[5..7], HexNumber);
+                        b = byte.Parse(word[7..], HexNumber);
+                        break;
+
+                    case 10:
+                        r = byte.Parse(word[1..3], HexNumber);
+                        g = byte.Parse(word[4..6], HexNumber);
+                        b = byte.Parse(word[7..9], HexNumber);
+                        break;
+
+                    case 13:
+                        r = byte.Parse(word[1..3], HexNumber);
+                        g = byte.Parse(word[5..7], HexNumber);
+                        b = byte.Parse(word[9..11], HexNumber);
+                        break;
+
+                    default:
+                        throw new ParserException("Invalid format for #color", _iLine);
+                }
+                _tokens.Add(new Token(new RGBA(r, g, b, a), _iLine));
+                ret = true;
+            }
+            else if (_internetColors.ContainsKey(word))
+            {
+                _tokens.Add(new Token(_internetColors[word], _iLine));
+                ret = true;
+            }
+
+            if (ret)
+            {
+                for (var i = 0; i < word.Length; i++)
+                {
+                    AdvanceScan(TokenType.Rgba);
+                }
+            }
+            return ret;
+        }
+        #endregion
+
         #region Comments
         private bool FindMlcEnd()
         {
@@ -258,7 +414,8 @@ namespace Eisenscript
                     _inMultilineComment = false;
                     return true;
                 }
-                else if (FinishedLine)
+
+                if (FinishedLine)
                 {
                     return false;
                 }
@@ -266,11 +423,11 @@ namespace Eisenscript
             }
         }
 
-        private bool CheckComment()
+        private void CheckComment()
         {
             if (Cur != '/')
             {
-                return false;
+                return;
             }
 
             if (ScanPeek == '/')
@@ -289,14 +446,8 @@ namespace Eisenscript
                 AdvanceScan(TokenType.Comment);      // over '*'
 
                 _inMultilineComment = true;
-                if (FindMlcEnd())
-                {
-                    // We haven't advanced to end of line so return false
-                    return false;
-                }
+                FindMlcEnd();
             }
-
-            return true;
         }
         #endregion
         #endregion
@@ -358,14 +509,11 @@ namespace Eisenscript
         internal Token Consume(TokenType tt)
         {
             var ret = _tokens[_iToken++];
-            if (ret.Type == tt)
-            {
-                return ret;
-            }
-            else
+            if (ret.Type != tt)
             {
                 throw new ParserException("Unexpected Token", ret.Line);
             }
+            return ret;
         }
 
         internal Token Peek()

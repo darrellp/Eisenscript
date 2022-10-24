@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+
 namespace Eisenscript;
 
 internal class Transformation

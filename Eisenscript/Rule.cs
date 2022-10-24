@@ -1,16 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Eisenscript
+﻿namespace Eisenscript
 {
     internal class Rule
     {
-        private string _name;
+        private readonly string _name;
         private double _weight;
+        private int _maxDepth;
         private List<RuleAction> _actions = new();
+
+        internal string Name
+        {
+            get => _name;
+            set => throw new NotImplementedException();
+        }
+
+        internal int MaxDepth
+        {
+            get => _maxDepth;
+            set => _maxDepth = value;
+        }
 
         public Rule(string name, double weight)
         {

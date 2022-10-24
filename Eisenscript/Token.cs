@@ -13,6 +13,7 @@ namespace Eisenscript
         OpenBrace,
         CloseBrace,
         Number,
+        Rgba,
         Variable,
         Set,
         Rule,
@@ -61,6 +62,7 @@ namespace Eisenscript
         // ReSharper disable RedundantDefaultMemberInitializer
         private readonly double _value = 0;
         private readonly string? _name = null;
+        private readonly RGBA _rgba = new RGBA();
         private readonly int _line;
         // ReSharper restore RedundantDefaultMemberInitializer
 
@@ -76,6 +78,18 @@ namespace Eisenscript
                     throw new ParserException("Internal: Trying to get value from non-numeric token", _line);
                 }
                 return _value;
+            }
+        }
+
+        internal RGBA Rgba
+        {
+            get
+            {
+                if (Type != TokenType.Rgba)
+                {
+                    throw new ParserException("Internal: Trying to get value from non-numeric token", _line);
+                }
+                return _rgba;
             }
         }
 
@@ -126,6 +140,13 @@ namespace Eisenscript
         {
             Type = TokenType.Number;
             _value = value;
+            _line = line;
+        }
+
+        internal Token(RGBA rgba, int line)
+        {
+            Type = TokenType.Rgba;
+            _rgba = rgba;
             _line = line;
         }
         internal Token(string name, int line)

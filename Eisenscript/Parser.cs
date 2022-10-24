@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Eisenscript
+﻿namespace Eisenscript
 {
     internal class Parser
     {
         private readonly Scan _scan;
+        private List<ParserException> _exceptions;
 
         internal Parser(TextReader input)
         {
             _scan = new Scan(input);
+            _exceptions = _scan.Exceptions;
         }
 
         internal Rules Rules()
@@ -26,6 +22,7 @@ namespace Eisenscript
 
             while (!_scan.Done)
             {
+
                 if (!ParseSet(rules) && !ParseRule(rules))
                 {
                     ParseStartingRule(rules);
@@ -86,7 +83,55 @@ namespace Eisenscript
 
             _scan.Consume(TokenType.Rule);
 
+            var rule = ParseRuleHeader();
+
+            _scan.Consume(TokenType.OpenBrace);
+            ParseRuleBody(rule);
+            _scan.Consume(TokenType.CloseBrace);
+
             return true;
+        }
+
+        private void ParseRuleBody(Rule rule)
+        {
+
+        }
+
+        private Rule ParseRuleHeader()
+        {
+            var ruleVariable = _scan.Consume(TokenType.Variable);
+            var weight = 100.0;
+            var maxDepth = -1;
+            Rule rule;
+
+            while (true)
+            {
+                var next = _scan.Peek();
+                if (next.Type is TokenType.Weight or TokenType.MaxDepth)
+                {
+                    switch (next.Type)
+                    {
+                        case TokenType.Weight:
+                            _scan.Advance();
+                            weight = _scan.NextDouble();
+                            continue;
+
+                        case TokenType.MaxDepth:
+                            _scan.Advance();
+                            maxDepth = _scan.NextInt();
+                            continue;
+                    }
+                }
+
+                rule = new Rule(ruleVariable.Name, weight)
+                {
+                    MaxDepth = maxDepth
+                };
+
+                break;
+            }
+
+            return rule;
         }
     }
 }

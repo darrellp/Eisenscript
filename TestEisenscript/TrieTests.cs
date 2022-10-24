@@ -1,6 +1,5 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Eisenscript;
-using Eisenscript.Data_Structures;
+﻿using Eisenscript.Data_Structures;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace TestEisenscript
 {

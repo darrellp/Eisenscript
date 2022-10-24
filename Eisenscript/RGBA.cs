@@ -1,6 +1,4 @@
-﻿using System;
-
-public struct RGBA
+﻿public struct RGBA
 {
     public byte R;
 	public byte G;
