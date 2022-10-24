@@ -83,7 +83,7 @@ namespace TestEisenscript
         public void TestRgba()
         {
             string testRgbaSrc = @"
-sulfuryellow
+maizeyellow
 #fff
 #010203
 #ee010203
@@ -94,14 +94,14 @@ sulfuryellow
             var scanner = new Scan(tr);
             var charTypes = scanner.MapCharTo.ToArray();
             var tokens = scanner.Tokens.ToArray();
-            Assert.IsTrue(charTypes[..12].All(t => t == TokenType.Rgba));
-            Assert.IsTrue(charTypes[13..17].All(t => t == TokenType.Rgba));
-            Assert.IsTrue(charTypes[18..25].All(t => t == TokenType.Rgba));
-            Assert.IsTrue(charTypes[26..35].All(t => t == TokenType.Rgba));
-            Assert.IsTrue(charTypes[36..46].All(t => t == TokenType.Rgba));
-            Assert.IsTrue(charTypes[47..60].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[..11].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[12..16].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[17..24].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[25..34].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[35..45].All(t => t == TokenType.Rgba));
+            Assert.IsTrue(charTypes[46..59].All(t => t == TokenType.Rgba));
             Assert.IsTrue(tokens[..].All(tk => tk.Type == TokenType.Rgba));
-            Assert.AreEqual(tokens[0], new Token(new RGBA(0xED, 0xFF, 0x21), 0));
+            Assert.AreEqual(tokens[0], new Token(new RGBA(0xE4, 0xA0, 0x10), 0));
             Assert.AreEqual(tokens[1], new Token(new RGBA(0xFF, 0xFF, 0xFF), 1));
             Assert.AreEqual(tokens[2], new Token(new RGBA(0x01, 0x02, 0x03), 2));
             Assert.AreEqual(tokens[3], new Token(new RGBA(0x01, 0x02, 0x03, 0xEE), 3));
