@@ -83,7 +83,7 @@ namespace TestEisenscript
         public void TestRgba()
         {
             string testRgbaSrc = @"
-SulfurYellow
+sulfuryellow
 #fff
 #010203
 #ee010203

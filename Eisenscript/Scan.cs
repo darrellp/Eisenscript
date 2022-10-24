@@ -63,8 +63,12 @@ namespace Eisenscript
             string? line;
             while ((line = trColors.ReadLine()) != null)
             {
+                if (line[0] == '/' && line[1] == '/')
+                {
+                    continue;
+                }
                 var posComma = line.IndexOf(',');
-                var name = Humpify( line[..posComma]);
+                var name = DeSpace( line[..posComma]);
                 var val = line[(posComma + 2)..];
                 var r = byte.Parse(val[..2], HexNumber);
                 var g = byte.Parse(val[2..4], HexNumber);
@@ -73,28 +77,13 @@ namespace Eisenscript
             }
         }
 
-        static string Humpify(string str)
+        static string DeSpace(string str)
         {
             StringBuilder sb = new();
-            bool makeUC = true;
 
-            foreach (var ch in str)
+            foreach (var ch in str.Where(c => char.IsAscii(c) && !char.IsWhiteSpace(c)))
             {
-                if (ch == ' ')
-                {
-                    makeUC = true;
-                    continue;
-                }
-
-                var cur = ch;
-
-                if (makeUC)
-                {
-                    cur = char.ToUpper(cur);
-                    makeUC = false;
-                }
-
-                sb.Append(cur);
+                sb.Append(char.ToLower(ch));
             }
 
             return sb.ToString();
