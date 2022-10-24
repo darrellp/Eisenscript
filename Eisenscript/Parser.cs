@@ -67,6 +67,10 @@
                     rules.SeedInit  = _scan.NextInt();
                     break;
 
+                case TokenType.Background:
+                    rules.Background = _scan.NextRgba();
+                    break;
+
                 default:
                     throw new ParserException("Unexpected token after \"set\"", token.Line);
             }

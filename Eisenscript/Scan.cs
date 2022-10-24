@@ -473,6 +473,18 @@ namespace Eisenscript
             return (int)Math.Round(Consume(TokenType.Number).Value);
         }
 
+        internal RGBA NextRgba()
+        {
+            if (Peek().Type != TokenType.Rgba)
+            {
+                var line = Peek().Line;
+                Advance();
+                throw new ParserException("Expected RGBA", line);
+            }
+
+            return Consume(TokenType.Rgba).Rgba;
+        }
+
         internal double? TryNextDouble()
         {
             if (Peek().Type != TokenType.Number)
