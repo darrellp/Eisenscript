@@ -66,7 +66,14 @@ namespace Eisenscript
 
         private void ParseStartingRule(Rules rules)
         {
-            throw new NotImplementedException();
+            var rule = new Rule(null, 100);
+            if (!ParseRuleBody(rule))
+            {
+                var line = _scan.Next().Line;
+                throw new ParserException("Expected rule body", line);
+            }
+
+            rules.AddInitRule(rule);
         }
 
         private bool ParseSet(Rules rules)
@@ -153,6 +160,10 @@ namespace Eisenscript
 
             while (true)
             {
+                if (_scan.Done)
+                {
+                    return null;
+                }
                 var token = _scan.Peek();
 
                 if (Token.IsObject(token))

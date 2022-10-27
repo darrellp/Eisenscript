@@ -12,6 +12,13 @@
         public int SeedInit { get; set; } = -1;
         public RGBA Background { get; set; } = new RGBA();
 
+        public List<Rule> InitRules => _initRules;
+
+        internal void AddInitRule(Rule rule)
+        {
+            _initRules.Add(rule);
+        }
+
         internal void AddRule(Rule rule)
         {
             if (!_weightedRules.ContainsKey(rule.Name))

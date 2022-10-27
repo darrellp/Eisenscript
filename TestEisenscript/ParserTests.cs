@@ -57,5 +57,18 @@ rule bx {box}"[2..];
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
         }
+
+        [TestMethod]
+        public void TestInitRules()
+        {
+            var scriptSets = @"
+box"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.InitRules.Count);
+            Assert.AreEqual(TokenType.Box, rules.InitRules[0].Actions[0].Type);
+        }
+
     }
 }
