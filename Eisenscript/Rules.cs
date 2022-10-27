@@ -3,6 +3,8 @@
     internal class Rules
     {
         private List<Rule> _initRules = new();
+        private readonly Dictionary<string, WeightedRule> _weightedRules = new();
+
         public int MaxDepth { get; set; } = 1000;
         public int MaxObjects { get; set; } = -1;
         public double MinSize { get; set; } = int.MaxValue;
@@ -10,13 +12,25 @@
         public int SeedInit { get; set; } = -1;
         public RGBA Background { get; set; } = new RGBA();
 
-        private List<Rule> _rules = new();
-
         internal void AddRule(Rule rule)
         {
-            _rules.Add(rule);
+            if (!_weightedRules.ContainsKey(rule.Name))
+            {
+                _weightedRules[rule.Name] = new WeightedRule();
+            }
+            _weightedRules[rule.Name].AddRule(rule);
         }
 
-        internal int RuleCount => _rules.Count;
+        internal Rule PickRule(string name, int line)
+        {
+            if (!_weightedRules.ContainsKey(name))
+            {
+                throw new ParserException("Trying to pick a non-existent rule", line);
+            }
+
+            return _weightedRules[name].Pick();
+        }
+
+        internal int RuleCount => _weightedRules.Values.Select(wr => wr.Count).Sum();
     }
 }

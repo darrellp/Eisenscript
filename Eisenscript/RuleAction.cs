@@ -6,9 +6,13 @@
         private string? _ruleName;     // The rule that will be called after all the transformations
         private List<TransformationLoop>? _loops;
         private SetAction? _setAction;
-        private TokenType _tt = TokenType.End;
         #endregion
 
+        #region Properties
+        internal TokenType Type { get; } = TokenType.End;
+        #endregion
+
+        #region Constructors
         public RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
             _ruleName = ruleName;
@@ -17,9 +21,10 @@
         }
         public RuleAction(TokenType tt, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
-            _tt = tt;
+            Type = tt;
             _setAction = setAction;
             _loops = loops;
         }
+        #endregion
     }
 }

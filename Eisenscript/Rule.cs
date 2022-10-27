@@ -7,6 +7,14 @@
         private int _maxDepth;
         private List<RuleAction> _actions = new();
 
+        internal List<RuleAction> Actions => _actions;
+
+        internal double Weight
+        {
+            get => _weight;
+            set => _weight = value;
+        }
+
         internal string Name
         {
             get => _name;

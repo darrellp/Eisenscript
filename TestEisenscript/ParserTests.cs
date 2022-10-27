@@ -53,6 +53,9 @@ rule bx {box}"[2..];
             var parser = new Parser(tr);
             var rules = parser.Rules();
             Assert.AreEqual(1, rules.RuleCount);
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(1, rule.Actions.Count);
+            Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
         }
     }
 }

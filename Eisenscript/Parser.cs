@@ -137,7 +137,7 @@ namespace Eisenscript
 
         private bool ParseRuleBody(Rule rule)
         {
-            RuleAction action;
+            RuleAction? action;
             while ((action = ParseAction(rule)) != null)
             {
                 rule.AddAction(action);
@@ -177,7 +177,7 @@ namespace Eisenscript
                         loops.Add(new TransformationLoop(1, ParseTransform()));
                         break;
 
-                    case TokenType.CloseBrace:
+                    default:
                         return null;
                 }
             }
