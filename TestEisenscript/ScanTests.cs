@@ -110,6 +110,11 @@ maizeyellow
         }
 
         [TestMethod]
+        public void TestDefines()
+        {
+        }
+
+        [TestMethod]
         public void TestKeywordsVariables()
         {
             string testScriptKeywords = @"

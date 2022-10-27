@@ -18,4 +18,15 @@ internal class Transformation
     private RGBA _blendColor = new();
     private double _strength = 0.0;
 #pragma warning restore CS0414
+
+    internal Transformation(Matrix4x4 mtx,
+        double deltaH = 0.0,
+        double scaleS = 1.0,
+        double scaleV = 1.0,
+        double scaleAlpha = 1.0,
+        bool isAbsoluteColor = false)
+    {
+        _mtx = mtx;
+
+    }
 }

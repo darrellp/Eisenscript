@@ -3,15 +3,23 @@
     internal class RuleAction
     {
         #region Private variables
-        private List<TransformationLoop> _loops = new();
-        private Rule _rule;     // The rule that will be called after all the transformations
-        private SetAction _setAction;
+        private string? _ruleName;     // The rule that will be called after all the transformations
+        private List<TransformationLoop>? _loops;
+        private SetAction? _setAction;
+        private TokenType _tt = TokenType.End;
         #endregion
 
-        public RuleAction(Rule rule, SetAction setAction)
+        public RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
-            _rule = rule;
+            _ruleName = ruleName;
             _setAction = setAction;
+            _loops = loops;
+        }
+        public RuleAction(TokenType tt, List<TransformationLoop>? loops = null, SetAction? setAction = null)
+        {
+            _tt = tt;
+            _setAction = setAction;
+            _loops = loops;
         }
     }
 }

@@ -24,5 +24,10 @@
             _name = name;
             _weight = weight;
         }
+
+        internal void AddAction(RuleAction action)
+        {
+            _actions.Add(action);
+        }
     }
 }

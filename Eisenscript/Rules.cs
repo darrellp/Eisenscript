@@ -2,7 +2,7 @@
 {
     internal class Rules
     {
-        private List<Rule> InitRules = new();
+        private List<Rule> _initRules = new();
         public int MaxDepth { get; set; } = 1000;
         public int MaxObjects { get; set; } = -1;
         public double MinSize { get; set; } = int.MaxValue;
@@ -16,5 +16,7 @@
         {
             _rules.Add(rule);
         }
+
+        internal int RuleCount => _rules.Count;
     }
 }

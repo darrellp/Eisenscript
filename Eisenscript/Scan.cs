@@ -16,6 +16,7 @@ namespace Eisenscript
         private int _ich;
         private bool _isScanned;
         private readonly List<Token> _tokens = new();
+        private readonly Dictionary<string, Object> _defines = new();
 
         // TODO: Probably implement the following list as a list of runs for efficiency and easier color coding
         private readonly List<TokenType> _mapCharToTokenType = new();
@@ -23,7 +24,7 @@ namespace Eisenscript
         private readonly string _canonicalText;
         private bool _inMultilineComment;
         private int _iToken;
-        private List<ParserException> _exceptions = new();
+        private readonly List<ParserException> _exceptions = new();
         private int _iLine;
         #endregion
 
@@ -233,7 +234,7 @@ namespace Eisenscript
                     // We found a keyword.  If it's not the prefix of something longer,
                     // report it.  Note that due to post-incrementing, ichReadAhead is
                     // pointing one char after the last letter in the keyword.
-                    if (ichReadAhead == _canonicalText.Length ||
+                    if (ichReadAhead == _canonicalText.Length || !char.IsLetter(Cur) ||
                         !char.IsLetterOrDigit(_canonicalText[ichReadAhead]))
                     {
                         AdvanceScan(ichReadAhead, tokenType);
@@ -452,21 +453,41 @@ namespace Eisenscript
             return _tokens[_iToken++];
         }
 
-        internal int? TryNextInt()
+        internal void Define(string name, Object definition)
         {
-            if (Peek().Type != TokenType.Number)
-            {
-                return null;
-            }
-
-            return (int)Math.Round(Consume(TokenType.Number).Value);
+            _defines[name] = definition;
         }
+
+        //internal int? TryNextInt()
+        //{
+        //    if (Peek().Type != TokenType.Number)
+        //    {
+        //        return null;
+        //    }
+
+        //    return (int)Math.Round(Consume(TokenType.Number).Value);
+        //}
+
         internal int NextInt()
         {
-            if (Peek().Type != TokenType.Number)
+            var token = Peek();
+            var line = token.Line;
+
+            if (token.Type == TokenType.Variable)
             {
-                var line = Peek().Line;
+                var name = token.Name!;
+                if (!_defines.ContainsKey(name) || _defines[name] is not double)
+                {
+                    throw new ParserException("Expected Integer", line);
+                }
+
                 Advance();
+                var val = (double) _defines[name];
+                return (int)Math.Round(val);
+            }
+
+            if (token.Type != TokenType.Number)
+            {
                 throw new ParserException("Expected Integer", line);
             }
 
@@ -475,36 +496,63 @@ namespace Eisenscript
 
         internal RGBA NextRgba()
         {
-            if (Peek().Type != TokenType.Rgba)
+            var token = Peek();
+            var line = token.Line;
+
+            if (token.Type == TokenType.Variable)
             {
-                var line = Peek().Line;
+                var name = token.Name!;
+                if (!_defines.ContainsKey(name) || _defines[name] is not RGBA)
+                {
+                    throw new ParserException("Expected Rgba", line);
+                }
+
                 Advance();
+                return (RGBA)_defines[name];
+            }
+
+            if (token.Type != TokenType.Rgba)
+            {
                 throw new ParserException("Expected RGBA", line);
             }
 
             return Consume(TokenType.Rgba).Rgba;
         }
 
-        internal double? TryNextDouble()
-        {
-            if (Peek().Type != TokenType.Number)
-            {
-                return null;
-            }
+        //internal double? TryNextDouble()
+        //{
+        //    if (Peek().Type != TokenType.Number)
+        //    {
+        //        return null;
+        //    }
 
-            return Consume(TokenType.Number).Value;
-        }
+        //    return Consume(TokenType.Number).Value;
+        //}
 
         internal double NextDouble()
         {
-            if (Peek().Type != TokenType.Number)
+            var token = Peek();
+            var line = token.Line;
+
+            if (token.Type == TokenType.Variable)
             {
-                var line = Peek().Line;
+                var name = token.Name!;
+                if (!_defines.ContainsKey(name) || _defines[name] is not double)
+                {
+                    throw new ParserException("Expected Integer", line);
+                }
+
                 Advance();
+                return (double)_defines[name];
+            }
+
+            if (token.Type != TokenType.Number)
+            {
                 throw new ParserException("Expected Float", line);
             }
 
-            return Consume(TokenType.Number).Value;
+            Advance();
+            return token.Value;
         }
 
         internal Token Consume(TokenType tt)
