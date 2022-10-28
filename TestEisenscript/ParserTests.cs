@@ -59,6 +59,24 @@ rule bx {box}"[2..];
         }
 
         [TestMethod]
+        public void TestRulesParse2()
+        {
+            var scriptSets = @"
+#define xoff -2
+rule bx {{x xoff y 1} box}"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.RuleCount);
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(1, rule.Actions.Count);
+            Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+            Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
+            Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
+            Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+        }
+
+        [TestMethod]
         public void TestInitRules()
         {
             var scriptSets = @"

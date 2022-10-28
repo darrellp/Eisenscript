@@ -9,6 +9,7 @@
         #endregion
 
         #region Properties
+        internal List<TransformationLoop>? Loops => _loops;
         internal TokenType Type { get; } = TokenType.End;
         #endregion
 

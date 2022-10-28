@@ -201,7 +201,9 @@ namespace Eisenscript
 
             while (_scan.Peek().Type != TokenType.CloseBrace)
             {
-                switch (_scan.Peek().Type)
+                var type = _scan.Peek().Type;
+                _scan.Advance();
+                switch (type)
                 {
                     case TokenType.X:
                         matrix *= Matrix4x4.CreateTranslation((float)_scan.NextDouble(), 0, 0);

@@ -4,7 +4,7 @@ namespace Eisenscript;
 
 internal class Transformation
 {
-    private Matrix4x4 _mtx = Matrix4x4.Identity;
+    internal Matrix4x4 Mtx { get; } = Matrix4x4.Identity;
 
     // For color alterations
 #pragma warning disable CS0414
@@ -26,7 +26,7 @@ internal class Transformation
         double scaleAlpha = 1.0,
         bool isAbsoluteColor = false)
     {
-        _mtx = mtx;
+        Mtx = mtx;
 
     }
 }
