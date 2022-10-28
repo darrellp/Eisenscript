@@ -45,7 +45,7 @@ set background bgnd"[2..];
         }
 
         [TestMethod]
-        public void TestRulesParse1()
+        public void TestBasicRule()
         {
             var scriptSets = @"
 rule bx {box}"[2..];
@@ -59,11 +59,10 @@ rule bx {box}"[2..];
         }
 
         [TestMethod]
-        public void TestRulesParse2()
+        public void TestRuleTransform()
         {
             var scriptSets = @"
-#define xoff -2
-rule bx {{x xoff y 1} box}"[2..];
+rule bx {{x -2 y 1} box}"[2..];
             var tr = new StringReader(scriptSets);
             var parser = new Parser(tr);
             var rules = parser.Rules();
@@ -71,6 +70,47 @@ rule bx {{x xoff y 1} box}"[2..];
             var rule = rules.PickRule("bx", 0);
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+            Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
+            Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
+            Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+        }
+
+        [TestMethod]
+        public void TestRuleTransformReps()
+        {
+            var scriptSets = @"
+rule bx {3 * {x -2 y 1} box}"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.RuleCount);
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(1, rule.Actions.Count);
+            Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+            Assert.AreEqual(3, rule.Actions[0].Loops[0].Reps);
+            Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
+            Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
+            Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+        }
+
+        [TestMethod]
+        public void TestRuleWeight()
+        {
+            var scriptSets = @"
+rule bx w 30 {3 * {x -2 y 1} box}"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.RuleCount);
+
+            // Picking the rule normalizes the weight to 1.
+            // All this stuff makes the testing of weights a bit difficult
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(1, rule.Weight);
+
+            Assert.AreEqual(1, rule.Actions.Count);
+            Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+            Assert.AreEqual(3, rule.Actions[0].Loops[0].Reps);
             Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
             Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
             Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
