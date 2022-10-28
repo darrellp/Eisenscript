@@ -2,7 +2,7 @@
 
 namespace Eisenscript
 {
-    internal enum TokenType
+    public enum TokenType
     {
         // ReSharper disable UnusedMember.Global
         White,

@@ -2,21 +2,21 @@
 
 namespace Eisenscript;
 
-internal class Transformation
+public class Transformation
 {
-    internal Matrix4x4 Mtx { get; } = Matrix4x4.Identity;
+    public Matrix4x4 Mtx { get; } = Matrix4x4.Identity;
 
     // For color alterations
 #pragma warning disable CS0414
-    private double _deltaH = 0.0;
-    private double _scaleS = 1.0;
-    private double _scaleV = 1.0;
-    private double _scaleAlpha = 1.0;
-    private bool _isAbsoluteColor = false;
+    public double DeltaH { get; } = 0.0;
+    public double ScaleS { get; } = 1.0;
+    public double ScaleV { get; } = 1.0;
+    public double ScaleAlpha { get; } = 1.0;
+    public bool IsAbsoluteColor { get; } = false;
 
     // For color blends
-    private RGBA _blendColor = new();
-    private double _strength = 0.0;
+    public RGBA BlendColor { get; } = new();
+    public double Strength { get; } = 0.0;
 #pragma warning restore CS0414
 
     internal Transformation(Matrix4x4 mtx,

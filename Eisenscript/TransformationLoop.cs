@@ -1,12 +1,12 @@
 ﻿namespace Eisenscript;
 
-internal class TransformationLoop
+public class TransformationLoop
 {
-    internal int Reps { get; }
+    public int Reps { get; }
 
-    internal Transformation Transform { get; }
+    public Transformation Transform { get; }
 
-    public TransformationLoop(int repetitions, Transformation transformation)
+    internal TransformationLoop(int repetitions, Transformation transformation)
     {
         Reps = repetitions;
         Transform = transformation;

@@ -1,8 +1,8 @@
 ﻿namespace Eisenscript
 {
-    internal class Rules
+    public class Rules
     {
-        private List<Rule> _initRules = new();
+        private readonly List<Rule> _initRules = new();
         private readonly Dictionary<string, WeightedRule> _weightedRules = new();
 
         public int MaxDepth { get; set; } = 1000;
@@ -28,7 +28,7 @@
             _weightedRules[rule.Name].AddRule(rule);
         }
 
-        internal Rule PickRule(string name, int line)
+        public Rule PickRule(string name, int line)
         {
             if (!_weightedRules.ContainsKey(name))
             {
@@ -38,6 +38,6 @@
             return _weightedRules[name].Pick();
         }
 
-        internal int RuleCount => _weightedRules.Values.Select(wr => wr.Count).Sum();
+        public int RuleCount => _weightedRules.Values.Select(wr => wr.Count).Sum();
     }
 }

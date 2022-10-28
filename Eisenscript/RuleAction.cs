@@ -1,6 +1,6 @@
 ﻿namespace Eisenscript
 {
-    internal class RuleAction
+    public class RuleAction
     {
         #region Private variables
         private string? _ruleName;     // The rule that will be called after all the transformations
@@ -9,18 +9,19 @@
         #endregion
 
         #region Properties
-        internal List<TransformationLoop>? Loops => _loops;
-        internal TokenType Type { get; } = TokenType.End;
+        public List<TransformationLoop>? Loops => _loops;
+        public TokenType Type { get; } = TokenType.End;
         #endregion
 
         #region Constructors
-        public RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
+        internal RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
             _ruleName = ruleName;
             _setAction = setAction;
             _loops = loops;
         }
-        public RuleAction(TokenType tt, List<TransformationLoop>? loops = null, SetAction? setAction = null)
+
+        internal RuleAction(TokenType tt, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
             Type = tt;
             _setAction = setAction;

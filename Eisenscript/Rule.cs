@@ -1,6 +1,6 @@
 ﻿namespace Eisenscript
 {
-    internal class Rule
+    public class Rule
     {
         private readonly string _name;
         private double _weight;
@@ -9,25 +9,25 @@
 
         internal List<RuleAction> Actions => _actions;
 
-        internal double Weight
+        public double Weight
         {
             get => _weight;
             set => _weight = value;
         }
 
-        internal string Name
+        public string Name
         {
             get => _name;
             set => throw new NotImplementedException();
         }
 
-        internal int MaxDepth
+        public int MaxDepth
         {
             get => _maxDepth;
             set => _maxDepth = value;
         }
 
-        public Rule(string name, double weight)
+        internal Rule(string name, double weight)
         {
             _name = name;
             _weight = weight;

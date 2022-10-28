@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Eisenscript
+﻿namespace Eisenscript
 {
-    internal class WeightedRule
+    public class WeightedRule
     {
         private readonly List<Rule> _rules = new();
         private readonly Random _rnd = new();
@@ -26,7 +20,7 @@ namespace Eisenscript
             }
         }
 
-        internal Rule Pick()
+        public Rule Pick()
         {
             if (!_isNormalized)
             {

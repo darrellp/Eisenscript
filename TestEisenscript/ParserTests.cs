@@ -70,9 +70,11 @@ rule bx {{x -2 y 1} box}"[2..];
             var rule = rules.PickRule("bx", 0);
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+#pragma warning disable CS8602
             Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
             Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
             Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+#pragma warning restore CS8602
         }
 
         [TestMethod]
@@ -87,10 +89,12 @@ rule bx {3 * {x -2 y 1} box}"[2..];
             var rule = rules.PickRule("bx", 0);
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+#pragma warning disable CS8602
             Assert.AreEqual(3, rule.Actions[0].Loops[0].Reps);
             Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
             Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
             Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+#pragma warning restore CS8602
         }
 
         [TestMethod]
@@ -110,10 +114,12 @@ rule bx w 30 {3 * {x -2 y 1} box}"[2..];
 
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+#pragma warning disable CS8602
             Assert.AreEqual(3, rule.Actions[0].Loops[0].Reps);
             Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
             Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
             Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+#pragma warning restore CS8602
         }
 
         [TestMethod]

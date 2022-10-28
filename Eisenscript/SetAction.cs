@@ -1,5 +1,5 @@
 ﻿namespace Eisenscript;
 
-internal class SetAction
+public class SetAction
 {
 }

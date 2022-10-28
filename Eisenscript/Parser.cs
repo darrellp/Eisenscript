@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace Eisenscript
 {
-    internal class Parser
+    public class Parser
     {
         private readonly Scan _scan;
         private List<ParserException> _exceptions;
@@ -14,7 +14,7 @@ namespace Eisenscript
             _exceptions = _scan.Exceptions;
         }
 
-        internal Rules Rules()
+        public Rules Rules()
         {
             return ParseProgram();
         }
