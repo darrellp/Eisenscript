@@ -98,6 +98,28 @@ rule bx {3 * {x -2 y 1} box}"[2..];
         }
 
         [TestMethod]
+        public void TestRuleMaxDepth()
+        {
+            var scriptSets = @"
+rule bx md 100 > bx2 {3 * {x -2 y 1} box}"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.RuleCount);
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(1, rule.Actions.Count);
+            Assert.AreEqual(100, rule.MaxDepth);
+            Assert.AreEqual("bx2", rule.MaxDepthNext);
+            Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+#pragma warning disable CS8602
+            Assert.AreEqual(3, rule.Actions[0].Loops[0].Reps);
+            Assert.AreEqual(-2, rule.Actions[0].Loops[0].Transform.Mtx.Translation.X);
+            Assert.AreEqual(1, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Y);
+            Assert.AreEqual(0, rule.Actions[0].Loops[0].Transform.Mtx.Translation.Z);
+#pragma warning restore CS8602
+        }
+
+        [TestMethod]
         public void TestRuleWeight()
         {
             var scriptSets = @"

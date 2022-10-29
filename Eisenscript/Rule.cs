@@ -5,10 +5,11 @@
         private readonly string _name;
         private double _weight;
         private int _maxDepth;
-        private List<RuleAction> _actions = new();
+        private readonly List<RuleAction> _actions = new();
 
         internal List<RuleAction> Actions => _actions;
 
+        public string? MaxDepthNext { get; set; }
         public double Weight
         {
             get => _weight;

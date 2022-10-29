@@ -9,6 +9,7 @@ namespace Eisenscript
         Comment,
         Error,
         Mult,
+        Greater,
         Define,
         OpenBrace,
         CloseBrace,
@@ -123,6 +124,7 @@ namespace Eisenscript
         {
             // Tokens whose name isn't the same as the string
             Trie.Insert("*", TokenType.Mult);
+            Trie.Insert(">", TokenType.Greater);
             Trie.Insert("#define", TokenType.Define);
             Trie.Insert("{", TokenType.OpenBrace);
             Trie.Insert("}", TokenType.CloseBrace);

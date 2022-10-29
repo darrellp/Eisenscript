@@ -240,6 +240,7 @@ namespace Eisenscript
             var ruleVariable = _scan.Consume(TokenType.Variable);
             var weight = 100.0;
             var maxDepth = -1;
+            string? maxDepthNext = null;
             Rule rule;
 
             while (true)
@@ -257,13 +258,19 @@ namespace Eisenscript
                         case TokenType.MaxDepth:
                             _scan.Advance();
                             maxDepth = _scan.NextInt();
+                            if (_scan.Peek().Type is TokenType.Greater)
+                            {
+                                _scan.Advance();
+                                maxDepthNext = _scan.Consume(TokenType.Variable).Name;
+                            }
                             continue;
                     }
                 }
 
                 rule = new Rule(ruleVariable.Name, weight)
                 {
-                    MaxDepth = maxDepth
+                    MaxDepth = maxDepth,
+                    MaxDepthNext = maxDepthNext
                 };
 
                 break;
