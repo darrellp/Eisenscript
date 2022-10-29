@@ -4,12 +4,13 @@
     {
         #region Private variables
         public string? RuleName { get; }
-        private readonly List<TransformationLoop>? _loops;
-        private SetAction? _setAction;
+        public SetAction? Set { get; }
+
         #endregion
 
         #region Properties
-        public List<TransformationLoop>? Loops => _loops;
+        public List<TransformationLoop>? Loops { get; }
+
         public TokenType Type { get; } = TokenType.End;
         #endregion
 
@@ -17,15 +18,20 @@
         internal RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
             RuleName = ruleName;
-            _setAction = setAction;
-            _loops = loops;
+            Set = setAction;
+            Loops = loops;
         }
 
         internal RuleAction(TokenType tt, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
             Type = tt;
-            _setAction = setAction;
-            _loops = loops;
+            Set = setAction;
+            Loops = loops;
+        }
+
+        internal RuleAction(SetAction setAction)
+        {
+            Set = setAction;
         }
         #endregion
     }

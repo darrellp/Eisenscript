@@ -78,6 +78,23 @@ rule bx {{x -2 y 1} box}"[2..];
         }
 
         [TestMethod]
+        public void TestRuleSetAction()
+        {
+            var scriptSets = @"
+rule bx {set md 10 set seed initial box}"[2..];
+            var tr = new StringReader(scriptSets);
+            var parser = new Parser(tr);
+            var rules = parser.Rules();
+            Assert.AreEqual(1, rules.RuleCount);
+            var rule = rules.PickRule("bx", 0);
+            Assert.AreEqual(3, rule.Actions.Count);
+            Assert.AreEqual(TokenType.MaxDepth, rule.Actions[0].Set!.SetTarget);
+            Assert.IsTrue(rule.Actions[1].Set!.IsInitSeed);
+            Assert.AreEqual(TokenType.Box, rule.Actions[2].Type);
+
+        }
+
+        [TestMethod]
         public void TestRuleTransformReps()
         {
             var scriptSets = @"

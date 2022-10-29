@@ -1,5 +1,6 @@
 ﻿using System.Numerics;
 
+// ReSharper disable once IdentifierTypo
 namespace Eisenscript
 {
     public class Parser
@@ -187,6 +188,51 @@ namespace Eisenscript
                     case TokenType.OpenBrace:
                         loops.Add(new TransformationLoop(1, ParseTransform()));
                         break;
+
+                    case TokenType.Set:
+                        _scan.Advance();
+                        var tokenType = _scan.Next();
+                        double value = 0.0;
+                        bool fIsInitSeed = false;
+
+                        // There is nothing to set RGBA value in rules I don't believe
+
+                        switch (tokenType.Type)
+                        {
+                            case TokenType.MaxDepth:
+                               value =_scan.NextInt();
+                                break;
+
+                            case TokenType.MaxObjects:
+                                value = _scan.NextInt();
+                                break;
+
+                            case TokenType.MinSize:
+                                value = _scan.NextDouble();
+                                break;
+
+                            case TokenType.MaxSize:
+                                value = _scan.NextDouble();
+                                break;
+
+                            case TokenType.Seed:
+                                var tokenSeed = _scan.Peek();
+                                if (tokenSeed.Type == TokenType.Initial)
+                                {
+                                    _scan.Advance();
+                                    fIsInitSeed = true;
+                                    break;
+                                }
+                                value  = _scan.NextInt();
+                                break;
+
+                            default:
+                                throw new ParserException("Unexpected token after \"set\"", token.Line);
+                        }
+
+                        return new RuleAction(fIsInitSeed
+                            ? SetAction.InitSeed()
+                            : new SetAction(tokenType.Type, value));
 
                     default:
                         return null;
