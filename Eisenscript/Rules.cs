@@ -1,4 +1,6 @@
-﻿namespace Eisenscript
+﻿using System.Diagnostics;
+
+namespace Eisenscript
 {
     public class Rules
     {
@@ -21,6 +23,7 @@
 
         internal void AddRule(Rule rule)
         {
+            Debug.Assert(rule.Name != null, "rule.Name != null");
             if (!_weightedRules.ContainsKey(rule.Name))
             {
                 _weightedRules[rule.Name] = new WeightedRule();

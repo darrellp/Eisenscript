@@ -1,22 +1,25 @@
 ﻿using System.Numerics;
 
+// ReSharper disable once IdentifierTypo
 namespace Eisenscript;
 
 public class Transformation
 {
-    public Matrix4x4 Mtx { get; } = Matrix4x4.Identity;
+    public Matrix4x4 Mtx { get; }
 
     // For color alterations
 #pragma warning disable CS0414
-    public double DeltaH { get; } = 0.0;
-    public double ScaleS { get; } = 1.0;
-    public double ScaleV { get; } = 1.0;
-    public double ScaleAlpha { get; } = 1.0;
-    public bool IsAbsoluteColor { get; } = false;
+    // ReSharper disable UnusedMember.Global
+    public double DeltaH { get; }
+    public double ScaleS { get; }
+    public double ScaleV { get; }
+    public double ScaleAlpha { get; }
+    public bool IsAbsoluteColor { get; }
 
     // For color blends
     public RGBA BlendColor { get; } = new();
     public double Strength { get; } = 0.0;
+    // ReSharper restore UnusedMember.Global
 #pragma warning restore CS0414
 
     internal Transformation(Matrix4x4 mtx,
@@ -27,6 +30,10 @@ public class Transformation
         bool isAbsoluteColor = false)
     {
         Mtx = mtx;
-
+        DeltaH = deltaH;
+        ScaleS = scaleS;
+        ScaleV = scaleV;
+        ScaleAlpha = scaleAlpha;
+        IsAbsoluteColor = isAbsoluteColor;
     }
 }

@@ -2,36 +2,21 @@
 {
     public class Rule
     {
-        private readonly string _name;
-        private double _weight;
-        private int _maxDepth;
         private readonly List<RuleAction> _actions = new();
 
         internal List<RuleAction> Actions => _actions;
 
-        public string? MaxDepthNext { get; set; }
-        public double Weight
-        {
-            get => _weight;
-            set => _weight = value;
-        }
+        public string? MaxDepthNext { get; init; }
+        public double Weight { get; set; }
 
-        public string Name
-        {
-            get => _name;
-            set => throw new NotImplementedException();
-        }
+        public string? Name { get; }
 
-        public int MaxDepth
-        {
-            get => _maxDepth;
-            set => _maxDepth = value;
-        }
+        public int MaxDepth { get; init; }
 
-        internal Rule(string name, double weight)
+        internal Rule(string? name, double weight = 1.0)
         {
-            _name = name;
-            _weight = weight;
+            Name = name;
+            Weight = weight;
         }
 
         internal void AddAction(RuleAction action)

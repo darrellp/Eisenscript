@@ -3,13 +3,14 @@ using System.Reflection;
 using System.Text;
 using static System.Globalization.NumberStyles;
 
+// ReSharper disable once IdentifierTypo
 namespace Eisenscript
 {
     internal class Scan
     {
         #region Statics
 
-        private static readonly Dictionary<string, RGBA> _internetColors = new();
+        private static readonly Dictionary<string, RGBA> InternetColors = new();
         #endregion
 
         #region Private Variables
@@ -74,7 +75,7 @@ namespace Eisenscript
                 var r = byte.Parse(val[..2], HexNumber);
                 var g = byte.Parse(val[2..4], HexNumber);
                 var b = byte.Parse(val[4..], HexNumber);
-                _internetColors[name] = new RGBA(r, g, b);
+                InternetColors[name] = new RGBA(r, g, b);
             }
         }
 
@@ -209,19 +210,20 @@ namespace Eisenscript
         {
             var ichReadAhead = _ich;
 
-            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) ;
-            // ichReadAhead is now one char beyond the end of our word
+            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) {}
+
+                // ichReadAhead is now one char beyond the end of our word
             return _canonicalText[_ich..(ichReadAhead - 1)];
         }
         #endregion
 
         #region Keywords/variables
-        private bool IsKeywordOrVariable()
+        private void IsKeywordOrVariable()
         {
             if (Cur == '/')
             {
                 // Forget about comments
-                return false;
+                return;
             }
             var ichReadAhead = _ich;
             Token.Trie.ResetSearch();
@@ -239,7 +241,7 @@ namespace Eisenscript
                     {
                         AdvanceScan(ichReadAhead, tokenType);
                         _tokens.Add(new Token(tokenType, _iLine));
-                        return true;
+                        return;
                     }
 
                     continue;
@@ -266,7 +268,7 @@ namespace Eisenscript
                     var name = _canonicalText[_ich..ichReadAhead];
                     AdvanceScan(ichReadAhead, TokenType.Variable);
                     _tokens.Add(new Token(name, _iLine));
-                    return true;
+                    return;
                 }
             }
         }
@@ -375,9 +377,9 @@ namespace Eisenscript
                 _tokens.Add(new Token(new RGBA(r, g, b, a), _iLine));
                 ret = true;
             }
-            else if (_internetColors.ContainsKey(word))
+            else if (InternetColors.ContainsKey(word))
             {
-                _tokens.Add(new Token(_internetColors[word], _iLine));
+                _tokens.Add(new Token(InternetColors[word], _iLine));
                 ret = true;
             }
 

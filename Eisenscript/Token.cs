@@ -77,7 +77,7 @@ namespace Eisenscript
         // ReSharper disable RedundantDefaultMemberInitializer
         private readonly double _value = 0;
         private readonly string? _name = null;
-        private readonly RGBA _rgba = new RGBA();
+        private readonly RGBA _rgba = new();
         private readonly int _line;
         // ReSharper restore RedundantDefaultMemberInitializer
 

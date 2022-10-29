@@ -4,7 +4,7 @@
     {
         private readonly List<Rule> _rules = new();
         private readonly Random _rnd = new();
-        private bool _isNormalized = false;
+        private bool _isNormalized;
 
         internal void AddRule(Rule rule)
         {

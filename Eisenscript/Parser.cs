@@ -1,11 +1,11 @@
-﻿using System.Collections.Concurrent;
-using System.Numerics;
+﻿using System.Numerics;
 
 namespace Eisenscript
 {
     public class Parser
     {
         private readonly Scan _scan;
+        // ReSharper disable once NotAccessedField.Local
         private List<ParserException> _exceptions;
 
         internal Parser(TextReader input)
@@ -26,7 +26,7 @@ namespace Eisenscript
             while (!_scan.Done)
             {
 
-                if (!ParseSet(rules) && !ParseRule(rules) && !ParseDefine(rules))
+                if (!ParseSet(rules) && !ParseRule(rules) && !ParseDefine())
                 {
                     ParseStartingRule(rules);
                 }
@@ -34,7 +34,7 @@ namespace Eisenscript
             return rules;
         }
 
-        private bool ParseDefine(Rules rules)
+        private bool ParseDefine()
         {
             if (_scan.Peek().Type != TokenType.Define)
             {
@@ -66,7 +66,7 @@ namespace Eisenscript
 
         private void ParseStartingRule(Rules rules)
         {
-            var rule = new Rule(null, 100);
+            var rule = new Rule(null);
             if (!ParseRuleBody(rule))
             {
                 var line = _scan.Next().Line;
@@ -145,7 +145,7 @@ namespace Eisenscript
         private bool ParseRuleBody(Rule rule)
         {
             RuleAction? action;
-            while ((action = ParseAction(rule)) != null)
+            while ((action = ParseAction()) != null)
             {
                 rule.AddAction(action);
             }
@@ -153,9 +153,9 @@ namespace Eisenscript
             return true;
         }
 
-        private RuleAction? ParseAction(Rule rule)
+        private RuleAction? ParseAction()
         {
-            List<TransformationLoop>? loops = new();
+            List<TransformationLoop> loops = new();
             SetAction? setAction = null;
 
             while (true)

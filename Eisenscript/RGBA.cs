@@ -1,11 +1,15 @@
-﻿public struct RGBA
+﻿// ReSharper disable once IdentifierTypo
+namespace Eisenscript;
+
+// ReSharper disable once InconsistentNaming
+public struct RGBA
 {
     public byte R;
-	public byte G;
-	public byte B;
-	public byte A;
+    public byte G;
+    public byte B;
+    public byte A;
 
-	public RGBA()
+    public RGBA()
     {
         R = G = B = A = 255;
     }
