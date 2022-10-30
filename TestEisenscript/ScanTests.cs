@@ -121,7 +121,8 @@ maizeyellow
 * #define {} md w b a set rule maxdepth
 maxobjects minsize maxsize seed initial background weight
 x y z rx ry rz s m fx fy fz hue sat brightness alpha color
-blend random colorpool box grid sphere line point triangle
+blend random  randomhue randomrgb greyscale 
+colorpool box grid sphere line point triangle
 mesh cylinder tube
 
 // Now some variables
@@ -132,7 +133,7 @@ zzxxy
 _dog_cat
 squirrel @nog
 rabbit
-".Substring(2);
+"[2..];
             TextReader tr = new StringReader(testScriptKeywords);
             var scanner = new Scan(tr);
             var charTypes = scanner.MapCharTo;
@@ -169,7 +170,7 @@ rabbit
             Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
             Assert.AreEqual("rabbit", tokens[iCur++].Name);
             Assert.AreEqual(1, scanner.Exceptions.Count);
-            Assert.AreEqual(12, scanner.Exceptions[0].Line);
+            Assert.AreEqual(13, scanner.Exceptions[0].Line);
         }
     }
 }

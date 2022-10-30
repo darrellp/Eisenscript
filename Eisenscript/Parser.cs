@@ -112,6 +112,10 @@ namespace Eisenscript
                     rules.Background = _scan.NextRgba();
                     break;
 
+                case TokenType.ColorPool:
+                    rules.Pool = ColorPool.FromScan(_scan);
+                    break;
+
                 default:
                     throw new ParserException("Unexpected token after \"set\"", token.Line);
             }
@@ -141,7 +145,6 @@ namespace Eisenscript
             rules.AddRule(rule);
             return true;
         }
-
 
         private bool ParseRuleBody(Rule rule)
         {
@@ -226,6 +229,10 @@ namespace Eisenscript
                                 value  = _scan.NextInt();
                                 break;
 
+                            case TokenType.ColorPool:
+                                var pool = ColorPool.FromScan(_scan);
+                                return new RuleAction(new SetAction(TokenType.ColorPool, pool));
+
                             default:
                                 throw new ParserException("Unexpected token after \"set\"", token.Line);
                         }
@@ -253,6 +260,7 @@ namespace Eisenscript
             var isAbsoluteColor = false;
             var blendColor = new RGBA();
             var strength = 0.0;
+            var isRandomColor = false;
 
             while (_scan.Peek().Type != TokenType.CloseBrace)
             {
@@ -343,6 +351,12 @@ namespace Eisenscript
                         break;
 
                     case TokenType.Color:
+                        if (_scan.Peek().Type == TokenType.Random)
+                        {
+                            _scan.Advance();
+                            isRandomColor = true;
+                            break;
+                        }
                         absoluteColor = _scan.NextRgba();
                         isAbsoluteColor = true;
                         break;
@@ -361,6 +375,7 @@ namespace Eisenscript
                 IsAbsoluteColor = isAbsoluteColor,
                 BlendColor = blendColor,
                 Strength = strength,
+                IsRandomColor = isRandomColor,
             };
         }
 

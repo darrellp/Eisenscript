@@ -13,6 +13,7 @@ namespace Eisenscript
         public double MaxSize { get; set; } = int.MinValue;
         public int SeedInit { get; set; } = -1;
         public RGBA Background { get; set; } = new RGBA();
+        public ColorPool Pool { get; set; } = new ColorPool();
 
         public List<Rule> InitRules => _initRules;
 

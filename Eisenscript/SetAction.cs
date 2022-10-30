@@ -5,7 +5,7 @@ public class SetAction
 {
     public TokenType SetTarget { get; }
     public double NumericValue { get; }
-    public RGBA RgbaValue { get; }
+    public ColorPool? Pool { get; }
 
     public bool IsInitSeed;
 
@@ -14,10 +14,10 @@ public class SetAction
         SetTarget = type;
         NumericValue = value;
     }
-    public SetAction(TokenType type, RGBA value)
+    public SetAction(TokenType type, ColorPool pool)
     {
         SetTarget = type;
-        RgbaValue = value;
+        Pool = pool;
     }
 
     private SetAction() { }

@@ -10,9 +10,12 @@ namespace Eisenscript
         Error,
         Mult,
         Greater,
+        List,
+        Image,
         Define,
         OpenBrace,
         CloseBrace,
+        Comma,
         Number,
         Rgba,
         Variable,
@@ -44,6 +47,9 @@ namespace Eisenscript
         Color,
         Blend,
         Random,
+        RandomHue,
+        RandomRgb,
+        GreyScale,
         ColorPool,
         Box,
         Grid,
@@ -125,9 +131,12 @@ namespace Eisenscript
             // Tokens whose name isn't the same as the string
             Trie.Insert("*", TokenType.Mult);
             Trie.Insert(">", TokenType.Greater);
+            Trie.Insert("list:", TokenType.List);
+            Trie.Insert("image:", TokenType.Image);
             Trie.Insert("#define", TokenType.Define);
             Trie.Insert("{", TokenType.OpenBrace);
             Trie.Insert("}", TokenType.CloseBrace);
+            Trie.Insert(",", TokenType.Comma);
 
             // Abbreviations
             Trie.Insert("md", TokenType.MaxDepth);
