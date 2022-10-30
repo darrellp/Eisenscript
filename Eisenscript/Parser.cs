@@ -99,7 +99,7 @@ namespace Eisenscript
                 case TokenType.MinSize:
                     rules.MinSize = _scan.NextDouble();
                     break;
-                
+
                 case TokenType.MaxSize:
                     rules.MaxSize = _scan.NextDouble();
                     break;
@@ -200,7 +200,7 @@ namespace Eisenscript
                         switch (tokenType.Type)
                         {
                             case TokenType.MaxDepth:
-                               value =_scan.NextInt();
+                                value =_scan.NextInt();
                                 break;
 
                             case TokenType.MaxObjects:
@@ -243,7 +243,16 @@ namespace Eisenscript
         private Transformation ParseTransform()
         {
             _scan.Consume(TokenType.OpenBrace);
-            Matrix4x4 matrix = Matrix4x4.Identity;
+
+            var matrix = Matrix4x4.Identity;
+            var deltaH = 0.0;
+            var scaleB = 1.0;
+            var scaleS = 1.0;
+            var scaleAlpha = 1.0;
+            var absoluteColor = new RGBA();
+            var isAbsoluteColor = false;
+            var blendColor = new RGBA();
+            var strength = 0.0;
 
             while (_scan.Peek().Type != TokenType.CloseBrace)
             {
@@ -274,11 +283,85 @@ namespace Eisenscript
                     case TokenType.Rz:
                         matrix *= Matrix4x4.CreateRotationZ((float)_scan.NextDouble());
                         break;
+
+                    case TokenType.S:
+                        var scaleX = (float)_scan.NextDouble();
+                        if (_scan.Peek().Type != TokenType.Number)
+                        {
+                            matrix *= Matrix4x4.CreateScale(scaleX);
+                            break;
+                        }
+
+                        var scaleY = (float)_scan.NextDouble();
+                        var scaleZ = (float)_scan.NextDouble();
+                        matrix *= Matrix4x4.CreateScale(scaleX, scaleY, scaleZ);
+                        break;
+
+                    case TokenType.M:
+                        var m11 = (float)_scan.NextDouble();
+                        var m12 = (float)_scan.NextDouble();
+                        var m13 = (float)_scan.NextDouble();
+                        var m21 = (float)_scan.NextDouble();
+                        var m22 = (float)_scan.NextDouble();
+                        var m23 = (float)_scan.NextDouble();
+                        var m31 = (float)_scan.NextDouble();
+                        var m32 = (float)_scan.NextDouble();
+                        var m33 = (float)_scan.NextDouble();
+                        matrix *= new Matrix4x4(
+                            m11, m12, m13, 0,
+                            m21, m22, m23, 0,
+                            m31, m32, m33, 0,
+                            0, 0, 0, 1);
+                        break;
+
+                    case TokenType.Fx:
+                        matrix *= Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
+                        break;
+
+                    case TokenType.Fy:
+                        matrix *= Matrix4x4.CreateReflection(new Plane(0, 1, 0, 0));
+                        break;
+
+                    case TokenType.Fz:
+                        matrix *= Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0));
+                        break;
+
+                    case TokenType.Hue:
+                        deltaH = (float)_scan.NextDouble();
+                        break;
+
+                    case TokenType.Sat:
+                        scaleS = (float)_scan.NextDouble();
+                        break;
+
+                    case TokenType.Brightness:
+                        scaleB = (float)_scan.NextDouble();
+                        break;
+
+                    case TokenType.Alpha:
+                        scaleAlpha = (float)_scan.NextDouble();
+                        break;
+
+                    case TokenType.Color:
+                        absoluteColor = _scan.NextRgba();
+                        isAbsoluteColor = true;
+                        break;
+
+                    case TokenType.Blend:
+                        blendColor = _scan.NextRgba();
+                        strength = _scan.NextDouble();
+                        break;
                 }
             }
 
             _scan.Consume(TokenType.CloseBrace);
-            return new Transformation(matrix);
+            return new Transformation(matrix, deltaH, scaleS, scaleB, scaleAlpha)
+            {
+                AbsoluteColor = absoluteColor,
+                IsAbsoluteColor = isAbsoluteColor,
+                BlendColor = blendColor,
+                Strength = strength,
+            };
         }
 
         private Rule ParseRuleHeader()

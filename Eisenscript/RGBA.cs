@@ -22,5 +22,5 @@ public struct RGBA
         A = a;
     }
 
-    public RGBA(byte r, byte g, byte b) : this(r, g, b, 255) {}
+    public RGBA(byte r, byte g, byte b) : this(r, g, b, 255) { }
 }

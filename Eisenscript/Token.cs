@@ -62,15 +62,15 @@ namespace Eisenscript
     {
         internal static bool IsObject(Token token)
         {
-            return token.Type is 
-                TokenType.Box or 
-                TokenType.Grid or 
-                TokenType.Sphere or 
-                TokenType.Line or 
-                TokenType.Point or 
-                TokenType.Triangle or 
-                TokenType.Mesh or 
-                TokenType.Cylinder or 
+            return token.Type is
+                TokenType.Box or
+                TokenType.Grid or
+                TokenType.Sphere or
+                TokenType.Line or
+                TokenType.Point or
+                TokenType.Triangle or
+                TokenType.Mesh or
+                TokenType.Cylinder or
                 TokenType.Tube;
         }
 

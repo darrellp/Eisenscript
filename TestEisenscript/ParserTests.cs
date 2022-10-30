@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
+﻿using Eisenscript;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Eisenscript;
+using System;
+using System.IO;
 
 namespace TestEisenscript
 {

@@ -20,10 +20,10 @@ public class SetAction
         RgbaValue = value;
     }
 
-    private SetAction() {}
+    private SetAction() { }
 
     internal static SetAction InitSeed()
     {
-        return new SetAction() {IsInitSeed = true};
+        return new SetAction() { IsInitSeed = true };
     }
 }

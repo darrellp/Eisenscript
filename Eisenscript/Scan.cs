@@ -70,7 +70,7 @@ namespace Eisenscript
                     continue;
                 }
                 var posComma = line.IndexOf(',');
-                var name = DeSpace( line[..posComma]);
+                var name = DeSpace(line[..posComma]);
                 var val = line[(posComma + 2)..];
                 var r = byte.Parse(val[..2], HexNumber);
                 var g = byte.Parse(val[2..4], HexNumber);
@@ -210,9 +210,9 @@ namespace Eisenscript
         {
             var ichReadAhead = _ich;
 
-            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) {}
+            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) { }
 
-                // ichReadAhead is now one char beyond the end of our word
+            // ichReadAhead is now one char beyond the end of our word
             return _canonicalText[_ich..(ichReadAhead - 1)];
         }
         #endregion
@@ -484,7 +484,7 @@ namespace Eisenscript
                 }
 
                 Advance();
-                var val = (double) _defines[name];
+                var val = (double)_defines[name];
                 return (int)Math.Round(val);
             }
 

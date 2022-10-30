@@ -1,8 +1,8 @@
+using Eisenscript;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Linq;
-using Eisenscript;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 // TODO: Real error handling instead of just throws
 namespace TestEisenscript

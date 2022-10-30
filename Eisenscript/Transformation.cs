@@ -12,28 +12,26 @@ public class Transformation
     // ReSharper disable UnusedMember.Global
     public double DeltaH { get; }
     public double ScaleS { get; }
-    public double ScaleV { get; }
+    public double ScaleB { get; }
     public double ScaleAlpha { get; }
-    public bool IsAbsoluteColor { get; }
-
+    public bool IsAbsoluteColor { get; init;  }
+    public RGBA AbsoluteColor { get; init; }
     // For color blends
-    public RGBA BlendColor { get; } = new();
-    public double Strength { get; } = 0.0;
+    public RGBA BlendColor { get; init; }
+    public double Strength { get; init; }
     // ReSharper restore UnusedMember.Global
 #pragma warning restore CS0414
 
-    internal Transformation(Matrix4x4 mtx,
-        double deltaH = 0.0,
+    private static readonly RGBA DefaultRgba = new RGBA();
+    internal Transformation(Matrix4x4 mtx, double deltaH = 0.0,
         double scaleS = 1.0,
-        double scaleV = 1.0,
-        double scaleAlpha = 1.0,
-        bool isAbsoluteColor = false)
+        double scaleB = 1.0,
+        double scaleAlpha = 1.0)
     {
         Mtx = mtx;
         DeltaH = deltaH;
         ScaleS = scaleS;
-        ScaleV = scaleV;
+        ScaleB = scaleB;
         ScaleAlpha = scaleAlpha;
-        IsAbsoluteColor = isAbsoluteColor;
     }
 }
