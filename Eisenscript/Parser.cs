@@ -1,6 +1,4 @@
-﻿using System.Numerics;
-
-// ReSharper disable once IdentifierTypo
+﻿// ReSharper disable once IdentifierTypo
 namespace Eisenscript
 {
     public class Parser
