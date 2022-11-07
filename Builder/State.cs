@@ -112,10 +112,10 @@ namespace Builder
                 var prevMatrix = Action.Loops[index].Transform.Mtx * _loopMatrices[index];
                 _loopMatrices[index] = prevMatrix;
 
-                for (var iIndex = index - 1; iIndex < cLoops; iIndex++)
+                for (var iIndex = index + 1; iIndex < cLoops; iIndex++)
                 {
-                    prevMatrix *= Action.Loops[index].Transform.Mtx;
-                    _loopMatrices[index] = prevMatrix;
+                    prevMatrix *= Action.Loops[iIndex].Transform.Mtx;
+                    _loopMatrices[iIndex] = prevMatrix;
                 }
             }
 
