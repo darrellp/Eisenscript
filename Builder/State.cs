@@ -117,6 +117,8 @@ namespace Builder
                     prevMatrix *= Action.Loops[iIndex].Transform.Mtx;
                     _loopMatrices[iIndex] = prevMatrix;
                 }
+
+                break;
             }
 
             if (!fContinue)
