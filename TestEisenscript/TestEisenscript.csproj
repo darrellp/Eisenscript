@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Builder\Builder.csproj" />
     <ProjectReference Include="..\Eisenscript\Eisenscript.csproj" />
   </ItemGroup>
 

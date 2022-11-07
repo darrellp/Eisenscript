@@ -1,9 +1,10 @@
-﻿namespace Eisenscript
+﻿// ReSharper disable once IdentifierTypo
+namespace Eisenscript
 {
     public class RuleAction
     {
         #region Private variables
-        public string? RuleName { get; }
+        public string? PostRule { get; }
         public SetAction? Set { get; }
 
         #endregion
@@ -15,9 +16,9 @@
         #endregion
 
         #region Constructors
-        internal RuleAction(string ruleName, List<TransformationLoop>? loops = null, SetAction? setAction = null)
+        internal RuleAction(string postRule, List<TransformationLoop>? loops = null, SetAction? setAction = null)
         {
-            RuleName = ruleName;
+            PostRule = postRule;
             Set = setAction;
             Loops = loops;
         }
@@ -38,7 +39,7 @@
         #region Parsing
         internal static RuleAction? ParseAction(Scan scan)
         {
-            List<TransformationLoop> loops = new();
+            List<TransformationLoop> loops = null;
             SetAction? setAction = null;
 
             while (true)
@@ -64,10 +65,18 @@
                     case TokenType.Number:
                         var reps = scan.NextInt();
                         scan.Consume(TokenType.Mult);
+                        if (loops == null)
+                        {
+                            loops = new List<TransformationLoop>();
+                        }
                         loops.Add(new TransformationLoop(reps, Transformation.ParseTransform(scan)));
                         break;
 
                     case TokenType.OpenBrace:
+                        if (loops == null)
+                        {
+                            loops = new List<TransformationLoop>();
+                        }
                         loops.Add(new TransformationLoop(1, Transformation.ParseTransform(scan)));
                         break;
 

@@ -32,7 +32,7 @@ namespace Eisenscript
             _weightedRules[rule.Name].AddRule(rule);
         }
 
-        public Rule PickRule(string name, int line)
+        public Rule PickRule(string name, int line = -1)
         {
             if (!_weightedRules.ContainsKey(name))
             {

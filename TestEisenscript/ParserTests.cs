@@ -56,6 +56,7 @@ rule bx {box}"[2..];
             var rule = rules.PickRule("bx", 0);
             Assert.AreEqual(1, rule.Actions.Count);
             Assert.AreEqual(TokenType.Box, rule.Actions[0].Type);
+            Assert.AreEqual(null, rule.Actions[0].Loops);
         }
 
         [TestMethod]

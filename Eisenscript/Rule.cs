@@ -4,7 +4,7 @@
     {
         private readonly List<RuleAction> _actions = new();
 
-        internal List<RuleAction> Actions => _actions;
+        public List<RuleAction> Actions => _actions;
 
         public string? MaxDepthNext { get; init; }
         public double Weight { get; set; }

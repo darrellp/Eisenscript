@@ -10,7 +10,7 @@ namespace Eisenscript
         #endregion
 
         #region Constructor
-        internal Parser(TextReader input)
+        public Parser(TextReader input)
         {
             _scan = new Scan(input);
             _exceptions = _scan.Exceptions;
