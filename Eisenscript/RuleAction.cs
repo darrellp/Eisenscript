@@ -39,7 +39,7 @@ namespace Eisenscript
         #region Parsing
         internal static RuleAction? ParseAction(Scan scan)
         {
-            List<TransformationLoop> loops = null;
+            List<TransformationLoop>? loops = null;
             SetAction? setAction = null;
 
             while (true)

@@ -13,11 +13,13 @@ namespace Builder
         internal Action<TokenType, Matrix4x4> Draw { get; }
         internal Rules? CurrentRules { get; private set; }
         internal Stack<State> StateStack { get; } = new();
+        internal int RecurseDepth => StateStack.Count;
+        internal bool AtStackLimit => StateStack.Count >= CurrentRules!.MaxDepth - 1;
         #endregion
 
         public SSBuilder(Action<TokenType, Matrix4x4> draw,
-            Action<Matrix4x4> setMatrix = null,
-            Action<Matrix4x4> mulMatrix = null)
+            Action<Matrix4x4>? setMatrix = null,
+            Action<Matrix4x4>? mulMatrix = null)
         {
             if (SetMatrix == null ^ MulMatrix == null)
             {
@@ -32,9 +34,13 @@ namespace Builder
         public void Build(TextReader input)
         {
             CurrentRules = new Parser(input).Rules();
+            if (CurrentRules == null)
+            {
+                throw new ArgumentException("Invalid script in Build()");
+            }
             foreach (var rule in CurrentRules.InitRules)
             {
-                StateStack.Push(new State(rule));
+                StateStack.Push(new State(this, rule));
                 Execute();
             }
         }

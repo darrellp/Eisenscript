@@ -1,26 +1,29 @@
-﻿using System.Numerics;
+﻿// #define VERBOSE
+using System.Numerics;
 using Eisenscript;
 
 namespace Builder
 {
     internal class State
     {
-        public const int MaxNestedTransforms = 10;
         internal Rule CurrentRule { get; }
         internal int ActionIndex { get; set; }
-        internal Matrix4x4[] _loopMatrices;
+        internal Matrix4x4[] LoopMatrices;
         internal int[] LoopIndices;
-        readonly Matrix4x4 _mtxInput = Matrix4x4.Identity;
+        private readonly Matrix4x4 _mtxInput;
+        private SSBuilder _builder;
 
         internal RuleAction Action => CurrentRule.Actions[ActionIndex];
 
-        public State(Rule currentRule, Matrix4x4? mtxInput = null)
+#pragma warning disable CS8618
+        public State(SSBuilder builder, Rule currentRule, Matrix4x4? mtxInput = null)
         {
             CurrentRule = currentRule;
-            int actionCount = currentRule.Actions.Count;
             _mtxInput = mtxInput ?? Matrix4x4.Identity;
+            _builder = builder;
             SetActionIndex(0);
         }
+#pragma warning restore CS8618
 
         internal void NextAction()
         {
@@ -30,31 +33,36 @@ namespace Builder
         internal void SetActionIndex(int index)
         {
             ActionIndex = index;
-            if (index == CurrentRule.Actions.Count)
+            if (index == CurrentRule.Actions.Count || Action.Loops == null)
             {
                 return;
             }
-            if (Action.Loops != null)
+
+            var loopCount = Action.Loops.Count;
+            LoopMatrices = new Matrix4x4[loopCount];
+            LoopIndices = new int[loopCount];
+            var curMatrix = _mtxInput;
+            for (var i = 0; i < loopCount; i++)
             {
-                var loopCount = Action.Loops.Count;
-                _loopMatrices = new Matrix4x4[loopCount];
-                LoopIndices = new int[loopCount];
-                var curMatrix = _mtxInput;
-                for (var i = 0; i < loopCount; i++)
-                {
-                    LoopIndices[i] = 0;
-                    curMatrix *= Action.Loops[i].Transform.Mtx;
-                    _loopMatrices[i] = curMatrix;
-                }
+                LoopIndices[i] = 0;
+                curMatrix *= Action.Loops[i].Transform.Mtx;
+                LoopMatrices[i] = curMatrix;
             }
         }
 
-        // The state is positioned to be executed as is.  During the execution the state/stack should be
+        // The state is positioned to be executed as is.  After effecting the execution the state/stack should be
         // manipulated to reflect the actions to be taken AFTER this execution.
         public void Execute(SSBuilder builder)
         {
+#if VERBOSE
+            Console.WriteLine(PadString(""));
+            Console.WriteLine(PadString(this.ToString()));
+#endif
             if (ActionIndex == CurrentRule.Actions.Count)
             {
+#if VERBOSE
+                Console.WriteLine(PadString("Popping ourselves off the stack"));
+#endif
                 builder.StateStack.Pop();
                 return;
             }
@@ -63,12 +71,23 @@ namespace Builder
             {
                 if (Action.PostRule != null)
                 {
-                    var newRule = builder.CurrentRules.PickRule(Action.PostRule);
-                    builder.StateStack.Push(new State(newRule));
+                    if (builder.AtStackLimit)
+                    {
+                        NextAction();
+                        return;
+                    }
+#if VERBOSE
+                    Console.WriteLine(PadString($"Invoking rule {Action.PostRule}"));
+#endif
+                    var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
+                    builder.StateStack.Push(new State(_builder, newRule));
                     NextAction();
                 }
                 else
                 {
+#if VERBOSE
+                    Console.WriteLine(PadString($"Drawing a {Action.Type}"));
+#endif
                     builder.Draw(Action.Type, _mtxInput);
                     NextAction();
                 }
@@ -80,18 +99,33 @@ namespace Builder
             // Current loops values are present when we enter this routine
             var fContinue = false;
             var cLoops = Action.Loops.Count;
-            var mtxExecution = _loopMatrices[cLoops - 1];
+            var mtxExecution = LoopMatrices[cLoops - 1];
 
             // Arrange for the invoked rule to be called
             // We ALWAYS are in the position to invoke the rule at this point.  If at the end we discover that we have
             // completed all the loops, we'll arrange for the next call to be positioned on the next action.
             if (Action.PostRule != null)
             {
+                if (builder.AtStackLimit)
+                {
+#if VERBOSE
+                    Console.WriteLine(PadString("Breaking out due to stack limit"));
+#endif
+                    // We can never call the post rule so don't bother going through all the loops
+                    NextAction();
+                    return;
+                }
+#if VERBOSE
+                Console.WriteLine(PadString($"Invoking rule {Action.PostRule}"));
+#endif
                 var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
-                builder.StateStack.Push(new State(newRule, mtxExecution));
+                builder.StateStack.Push(new State(_builder, newRule, mtxExecution));
             }
             else
             {
+#if VERBOSE
+                Console.WriteLine(PadString($"Drawing a {Action.Type}"));
+#endif
                 builder.Draw(Action.Type, mtxExecution);
             }
 
@@ -107,15 +141,18 @@ namespace Builder
                     continue;
                 }
 
+#if VERBOSE
+                Console.WriteLine(PadString($"Incrementing loop {index}"));
+#endif
                 // We've found the index that will be incremented
                 fContinue = true;
-                var prevMatrix = Action.Loops[index].Transform.Mtx * _loopMatrices[index];
-                _loopMatrices[index] = prevMatrix;
+                var prevMatrix = Action.Loops[index].Transform.Mtx * LoopMatrices[index];
+                LoopMatrices[index] = prevMatrix;
 
                 for (var iIndex = index + 1; iIndex < cLoops; iIndex++)
                 {
                     prevMatrix *= Action.Loops[iIndex].Transform.Mtx;
-                    _loopMatrices[iIndex] = prevMatrix;
+                    LoopMatrices[iIndex] = prevMatrix;
                 }
 
                 break;
@@ -126,6 +163,38 @@ namespace Builder
                 // Done with this action, move on to the next
                 NextAction();
             }
+        }
+
+        public override string ToString()
+        {
+            if (_builder == null)
+            {
+                return "<NULL BUILDER>";
+            }
+            var name = CurrentRule.Name ?? "<INIT>";
+            var xlat = _mtxInput.Translation;
+
+            if (ActionIndex == CurrentRule.Actions.Count)
+            {
+                return $"{name} finished";
+            }
+            return $"{name}:{ActionIndex} Indices: {LoopIndicesToString()} TR:({xlat.X}, {xlat.Y}, {xlat.Z})";
+        }
+
+        private string LoopIndicesToString()
+        {
+            if (Action.Loops == null)
+            {
+                return "NA";
+            }
+
+            return string.Join(" ", LoopIndices.Select(v => v.ToString()));
+        }
+
+        private string PadString(string str)
+        {
+            var padding = new string(' ', 4 * (_builder.RecurseDepth - 1));
+            return padding + str;
         }
     }
 }
