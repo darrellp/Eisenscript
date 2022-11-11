@@ -5,35 +5,108 @@ namespace Eisenscript;
 
 public class Transformation
 {
+    #region Values
     public Matrix4x4 Mtx { get; }
 
     // For color alterations
 #pragma warning disable CS0414
     // ReSharper disable UnusedAutoPropertyAccessor.Global
-    public double DeltaH { get; }
-    public double ScaleS { get; }
-    public double ScaleB { get; }
-    public double ScaleAlpha { get; }
-    public bool IsAbsoluteColor { get; init;  }
-    public bool IsRandomColor { get; init; }
-    public RGBA AbsoluteColor { get; init; }
+    private readonly double _deltaH;
+    private readonly double _scaleS;
+    private readonly double _scaleB;
+    private readonly double _scaleAlpha;
+    internal bool IsAbsoluteColor { get; init; }
+    internal RGBA AbsoluteColor { get; init; }
+    internal bool IsRandomColor { get; init; }
+
     // For color blends
-    public RGBA BlendColor { get; init; }
-    public double Strength { get; init; }
+    private double _hBlend;
+    private double _sBlend;
+    private double _vBlend;
+    internal double Strength { get; init; }
+    private bool _hsbRequired;
+    private bool _colorAlteration;
+    private bool _colorValidated;
+    internal RGBA BlendColor
+    {
+        set => (_hBlend, _sBlend, _vBlend) = value.HsvFromRgb();
+    }
     // ReSharper restore UnusedAutoPropertyAccessor.Global
 #pragma warning restore CS0414
+    #endregion
 
-    internal Transformation(Matrix4x4 mtx, double deltaH = 0.0,
+    #region Constructor
+    internal Transformation(Matrix4x4 mtx,
+        double deltaH = 0.0,
         double scaleS = 1.0,
         double scaleB = 1.0,
         double scaleAlpha = 1.0)
     {
+        scaleS = Math.Max(scaleS, 0);
+        scaleB = Math.Max(scaleB, 0);
         Mtx = mtx;
-        DeltaH = deltaH;
-        ScaleS = scaleS;
-        ScaleB = scaleB;
-        ScaleAlpha = scaleAlpha;
+        _deltaH = deltaH;
+        _scaleS = scaleS;
+        _scaleB = scaleB;
+        _scaleAlpha = scaleAlpha;
     }
+    #endregion
+
+    #region Transformation
+    public (Matrix4x4, RGBA) DoTransform(Matrix4x4 matrix, RGBA rgba)
+    {
+        if (!_colorValidated)
+        {
+            _colorValidated = true;
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            _hsbRequired = _deltaH != 0 || _scaleS != 1 || _scaleB != 1 || Strength != 0;
+            _colorAlteration = _hsbRequired || _scaleAlpha != 1 || Strength != 0 || IsAbsoluteColor || IsRandomColor;
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+        }
+        var retMatrix = Mtx * matrix;
+        var retRgba = rgba;
+
+        if (!_colorAlteration)
+        {
+            return (retMatrix, retRgba);
+        }
+        if (IsAbsoluteColor)
+        {
+            return (retMatrix, AbsoluteColor);
+        }
+
+        if (_hsbRequired)
+        {
+            // TODO: Am I getting HSV when I should be getting HSB?  Not sure.
+            var (h, s, b) = rgba.HsvFromRgb();
+            if (_deltaH != 0)
+            {
+                h = (h + _deltaH) % 360;
+            }
+
+            // ReSharper disable CompareOfFloatsByEqualityOperator
+            if (_scaleS != 1)
+            {
+                s = Math.Max(1, s * _scaleS);
+            }
+
+            if (_scaleB != 1)
+            {
+                b = Math.Max(1, b * _scaleB);
+            }
+            // ReSharper restore CompareOfFloatsByEqualityOperator
+
+            retRgba = RGBA.RgbFromHsv(h, s, b);
+        }
+
+        if (_scaleAlpha != 0)
+        {
+            rgba.A = (byte)Math.Max(255.99, _scaleAlpha * rgba.A);
+        }
+
+        return (retMatrix, retRgba);
+    }
+    #endregion
 
     #region Parsing
     internal static Transformation ParseTransform(Scan scan)

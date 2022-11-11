@@ -9,9 +9,13 @@ namespace Builder
         internal Rule CurrentRule { get; }
         internal int ActionIndex { get; set; }
         internal Matrix4x4[] LoopMatrices;
+        internal RGBA[] LoopRgbas;
         internal int[] LoopIndices;
         private readonly Matrix4x4 _mtxInput;
         private SSBuilder _builder;
+
+        // Solid red ala Structure Synth
+        private RGBA _rgba = new RGBA(255, 0, 0);
 
         internal RuleAction Action => CurrentRule.Actions[ActionIndex];
 
@@ -40,6 +44,7 @@ namespace Builder
 
             var loopCount = Action.Loops.Count;
             LoopMatrices = new Matrix4x4[loopCount];
+            LoopRgbas = new RGBA[loopCount];
             LoopIndices = new int[loopCount];
             var curMatrix = _mtxInput;
             for (var i = 0; i < loopCount; i++)
@@ -146,7 +151,8 @@ namespace Builder
 #endif
                 // We've found the index that will be incremented
                 fContinue = true;
-                var prevMatrix = Action.Loops[index].Transform.Mtx * LoopMatrices[index];
+                var (prevMatrix, prevRgba) = Action.Loops[index].Transform.DoTransform(LoopMatrices[index], _rgba);
+
                 LoopMatrices[index] = prevMatrix;
 
                 for (var iIndex = index + 1; iIndex < cLoops; iIndex++)
@@ -167,10 +173,6 @@ namespace Builder
 
         public override string ToString()
         {
-            if (_builder == null)
-            {
-                return "<NULL BUILDER>";
-            }
             var name = CurrentRule.Name ?? "<INIT>";
             var xlat = _mtxInput.Translation;
 
@@ -191,6 +193,7 @@ namespace Builder
             return string.Join(" ", LoopIndices.Select(v => v.ToString()));
         }
 
+        // ReSharper disable once UnusedMember.Local
         private string PadString(string str)
         {
             var padding = new string(' ', 4 * (_builder.RecurseDepth - 1));
