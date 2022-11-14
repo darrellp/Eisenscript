@@ -1,4 +1,6 @@
 ﻿// #define VERBOSE
+
+using System.Diagnostics;
 using System.Numerics;
 using Eisenscript;
 
@@ -6,19 +8,20 @@ namespace Builder
 {
     internal class State
     {
+        #region Variables
         internal Rule CurrentRule { get; }
         internal int ActionIndex { get; set; }
         internal Matrix4x4[] LoopMatrices;
         internal RGBA[] LoopRgbas;
         internal int[] LoopIndices;
         private readonly Matrix4x4 _mtxInput;
-        private SSBuilder _builder;
-
+        private readonly SSBuilder _builder;
         // Solid red ala Structure Synth
-        private RGBA _rgba = new RGBA(255, 0, 0);
-
+        private readonly RGBA _rgbaInput = new RGBA(255, 0, 0);
         internal RuleAction Action => CurrentRule.Actions[ActionIndex];
+        #endregion
 
+        #region Constructor
 #pragma warning disable CS8618
         public State(SSBuilder builder, Rule currentRule, Matrix4x4? mtxInput = null)
         {
@@ -27,8 +30,20 @@ namespace Builder
             _builder = builder;
             SetActionIndex(0);
         }
-#pragma warning restore CS8618
 
+        public State(SSBuilder builder, Rule currentRule, RGBA rgbaInput, Matrix4x4? mtxInput = null)
+        {
+            CurrentRule = currentRule;
+            _mtxInput = mtxInput ?? Matrix4x4.Identity;
+            _rgbaInput = rgbaInput;
+            _builder = builder;
+            SetActionIndex(0);
+        }
+
+#pragma warning restore CS8618
+        #endregion
+
+        #region Building
         internal void NextAction()
         {
             SetActionIndex(ActionIndex + 1);
@@ -47,11 +62,13 @@ namespace Builder
             LoopRgbas = new RGBA[loopCount];
             LoopIndices = new int[loopCount];
             var curMatrix = _mtxInput;
+            var curRgba = _rgbaInput;
             for (var i = 0; i < loopCount; i++)
             {
                 LoopIndices[i] = 0;
-                curMatrix *= Action.Loops[i].Transform.Mtx;
+                (curMatrix, curRgba, _) = Action.Loops[i].Transform.DoTransform(curMatrix, curRgba);
                 LoopMatrices[i] = curMatrix;
+                LoopRgbas[i] = curRgba;
             }
         }
 
@@ -59,15 +76,11 @@ namespace Builder
         // manipulated to reflect the actions to be taken AFTER this execution.
         public void Execute(SSBuilder builder)
         {
-#if VERBOSE
-            Console.WriteLine(PadString(""));
-            Console.WriteLine(PadString(this.ToString()));
-#endif
+            VerboseMsg("");
+            VerboseMsg(this.ToString());
             if (ActionIndex == CurrentRule.Actions.Count)
             {
-#if VERBOSE
-                Console.WriteLine(PadString("Popping ourselves off the stack"));
-#endif
+                VerboseMsg("Popping ourselves off the stack");
                 builder.StateStack.Pop();
                 return;
             }
@@ -78,22 +91,19 @@ namespace Builder
                 {
                     if (builder.AtStackLimit)
                     {
+                        VerboseMsg("Stack limit reached");
                         NextAction();
                         return;
                     }
-#if VERBOSE
-                    Console.WriteLine(PadString($"Invoking rule {Action.PostRule}"));
-#endif
+                    VerboseMsg($"Invoking rule {Action.PostRule}");
                     var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
                     builder.StateStack.Push(new State(_builder, newRule));
                     NextAction();
                 }
                 else
                 {
-#if VERBOSE
-                    Console.WriteLine(PadString($"Drawing a {Action.Type}"));
-#endif
-                    builder.Draw(Action.Type, _mtxInput);
+                    VerboseMsg($"Drawing a {Action.Type}");
+                    builder.Draw(Action.Type, _mtxInput, _rgbaInput);
                     NextAction();
                 }
 
@@ -105,6 +115,7 @@ namespace Builder
             var fContinue = false;
             var cLoops = Action.Loops.Count;
             var mtxExecution = LoopMatrices[cLoops - 1];
+            var rgbaExecution = LoopRgbas[cLoops - 1];
 
             // Arrange for the invoked rule to be called
             // We ALWAYS are in the position to invoke the rule at this point.  If at the end we discover that we have
@@ -113,25 +124,20 @@ namespace Builder
             {
                 if (builder.AtStackLimit)
                 {
-#if VERBOSE
-                    Console.WriteLine(PadString("Breaking out due to stack limit"));
-#endif
+                    VerboseMsg("Breaking out due to stack limit");
+
                     // We can never call the post rule so don't bother going through all the loops
                     NextAction();
                     return;
                 }
-#if VERBOSE
-                Console.WriteLine(PadString($"Invoking rule {Action.PostRule}"));
-#endif
+                VerboseMsg($"Invoking rule {Action.PostRule}");
                 var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
-                builder.StateStack.Push(new State(_builder, newRule, mtxExecution));
+                builder.StateStack.Push(new State(_builder, newRule, rgbaExecution, mtxExecution));
             }
             else
             {
-#if VERBOSE
-                Console.WriteLine(PadString($"Drawing a {Action.Type}"));
-#endif
-                builder.Draw(Action.Type, mtxExecution);
+                VerboseMsg($"Drawing a {Action.Type}");
+                builder.Draw(Action.Type, mtxExecution, rgbaExecution);
             }
 
             // ...and adjust indices/matrices for next step in the loops
@@ -142,22 +148,23 @@ namespace Builder
                     // This index loops back to the beginning
                     LoopIndices[index] = 0;
 
-                    // We'll adjust matrices after we've located the advancing index
+                    // We'll adjust matrices/colors after we've located the advancing index
                     continue;
                 }
 
-#if VERBOSE
-                Console.WriteLine(PadString($"Incrementing loop {index}"));
-#endif
+                VerboseMsg($"Incrementing loop {index}");
                 // We've found the index that will be incremented
                 fContinue = true;
-                var (prevMatrix, prevRgba) = Action.Loops[index].Transform.DoTransform(LoopMatrices[index], _rgba);
+                // TODO: Use ColorChanged?
+                var (prevMatrix, prevRgba, _) =
+                    Action.Loops[index].Transform.DoTransform(LoopMatrices[index], _rgbaInput);
 
                 LoopMatrices[index] = prevMatrix;
+                LoopRgbas[index] = prevRgba;
 
                 for (var iIndex = index + 1; iIndex < cLoops; iIndex++)
                 {
-                    prevMatrix *= Action.Loops[iIndex].Transform.Mtx;
+                    (prevMatrix, prevRgba, _) = Action.Loops[iIndex].Transform.DoTransform(prevMatrix, prevRgba);
                     LoopMatrices[iIndex] = prevMatrix;
                 }
 
@@ -170,7 +177,9 @@ namespace Builder
                 NextAction();
             }
         }
+        #endregion
 
+        #region Debug
         public override string ToString()
         {
             var name = CurrentRule.Name ?? "<INIT>";
@@ -193,11 +202,13 @@ namespace Builder
             return string.Join(" ", LoopIndices.Select(v => v.ToString()));
         }
 
-        // ReSharper disable once UnusedMember.Local
-        private string PadString(string str)
+        [Conditional("VERBOSE")]
+        private void VerboseMsg(string msg)
         {
             var padding = new string(' ', 4 * (_builder.RecurseDepth - 1));
-            return padding + str;
+
+            Console.WriteLine($"{padding}{msg}");
         }
+        #endregion
     }
 }

@@ -21,7 +21,7 @@ box"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt = t;
                 mtx = m;
@@ -43,7 +43,7 @@ box"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt = t;
                 mtx = m;
@@ -67,7 +67,7 @@ rule r1 {3 * {x 2 y 3} box}"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt[callCount] = t;
                 matrices[callCount++] = m;
@@ -94,7 +94,7 @@ rule r1 {2 * {x 2} 2 * {y 3} box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt[callCount] = t;
                 matrices[callCount++] = m;
@@ -124,7 +124,7 @@ rule r2 {box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt[callCount] = t;
                 matrices[callCount++] = m;
@@ -154,7 +154,7 @@ rule r2 {box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt[callCount] = t;
                 matrices[callCount++] = m;
@@ -184,7 +184,7 @@ rule r1 { {x 2} r1 box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m) =>
+            var builder = new SSBuilder((t, m, _) =>
             {
                 tt[callCount] = t;
                 matrices[callCount++] = m;
@@ -203,5 +203,25 @@ rule r1 { {x 2} r1 box}"[2..];
             Assert.AreEqual(2, matrices[2]!.Value.Translation.X);
             Assert.AreEqual(0, matrices[3]!.Value.Translation.X);
         }
+
+        [TestMethod]
+        public void TestRGBAAbsolute()
+        {
+            string testScript = @"
+r1
+rule r1 {3 * {color blue x 2} box}"[2..];
+            RGBA[] colors = new RGBA[3];
+            int callCount = 0;
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder((t, m, r) =>
+            {
+                colors[callCount++] = r;
+            });
+            builder.Build(tr);
+            Assert.AreEqual(3, callCount);
+            Assert.IsTrue(colors.All(r => r.A == 255 && r.R == 0 && r.G == 0 && r.B == 255));
+        }
+
     }
 }

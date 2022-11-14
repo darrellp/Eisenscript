@@ -1,5 +1,4 @@
-﻿using Eisencript;
-using System.Numerics;
+﻿using System.Numerics;
 using Eisenscript;
 
 namespace Builder
@@ -10,14 +9,14 @@ namespace Builder
         #region Private variables
         internal Action<Matrix4x4>? SetMatrix { get; }
         internal Action<Matrix4x4>? MulMatrix { get; }
-        internal Action<TokenType, Matrix4x4> Draw { get; }
+        internal Action<TokenType, Matrix4x4, RGBA> Draw { get; }
         internal Rules? CurrentRules { get; private set; }
         internal Stack<State> StateStack { get; } = new();
         internal int RecurseDepth => StateStack.Count;
         internal bool AtStackLimit => StateStack.Count >= CurrentRules!.MaxDepth - 1;
         #endregion
 
-        public SSBuilder(Action<TokenType, Matrix4x4> draw,
+        public SSBuilder(Action<TokenType, Matrix4x4, RGBA> draw,
             Action<Matrix4x4>? setMatrix = null,
             Action<Matrix4x4>? mulMatrix = null)
         {

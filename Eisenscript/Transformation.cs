@@ -23,13 +23,18 @@ public class Transformation
     private double _hBlend;
     private double _sBlend;
     private double _vBlend;
+    private byte _aBlend;
     internal double Strength { get; init; }
     private bool _hsbRequired;
     private bool _colorAlteration;
     private bool _colorValidated;
     internal RGBA BlendColor
     {
-        set => (_hBlend, _sBlend, _vBlend) = value.HsvFromRgb();
+        set
+        {
+            (_hBlend, _sBlend, _vBlend) = value.HsvFromRgb();
+            _aBlend = value.A;
+        }
     }
     // ReSharper restore UnusedAutoPropertyAccessor.Global
 #pragma warning restore CS0414
@@ -53,7 +58,7 @@ public class Transformation
     #endregion
 
     #region Transformation
-    public (Matrix4x4, RGBA) DoTransform(Matrix4x4 matrix, RGBA rgba)
+    public (Matrix4x4, RGBA, bool colorChanged) DoTransform(Matrix4x4 matrix, RGBA rgba)
     {
         if (!_colorValidated)
         {
@@ -68,11 +73,11 @@ public class Transformation
 
         if (!_colorAlteration)
         {
-            return (retMatrix, retRgba);
+            return (retMatrix, retRgba, false);
         }
         if (IsAbsoluteColor)
         {
-            return (retMatrix, AbsoluteColor);
+            return (retMatrix, AbsoluteColor, true);
         }
 
         if (_hsbRequired)
@@ -96,7 +101,15 @@ public class Transformation
             }
             // ReSharper restore CompareOfFloatsByEqualityOperator
 
+            if (Strength != 0)
+            {
+                h = h * (1 - Strength) + _hBlend * Strength;
+                s = s * (1 - Strength) + _sBlend * Strength;
+                b = b * (1 - Strength) + _vBlend * Strength;
+            }
+
             retRgba = RGBA.RgbFromHsv(h, s, b);
+            retRgba.A = rgba.A;
         }
 
         if (_scaleAlpha != 0)
@@ -104,7 +117,11 @@ public class Transformation
             rgba.A = (byte)Math.Max(255.99, _scaleAlpha * rgba.A);
         }
 
-        return (retMatrix, retRgba);
+        if (Strength != 0)
+        {
+            rgba.A = (byte)(rgba.A * (1 - Strength) + _aBlend * Strength);
+        }
+        return (retMatrix, retRgba, true);
     }
     #endregion
 
