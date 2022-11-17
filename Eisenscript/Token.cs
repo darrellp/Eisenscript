@@ -146,7 +146,7 @@ namespace Eisenscript
 
             for (var i = (int)TokenType.Variable + 1; i < (int)TokenType.End; i++)
             {
-                TokenType tt = (TokenType)i;
+                var tt = (TokenType)i;
 #pragma warning disable CS8602
                 Trie.Insert(Enum.GetName(tt).ToLower(), tt);
 #pragma warning restore CS8602

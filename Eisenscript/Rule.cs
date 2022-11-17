@@ -50,8 +50,7 @@
 
         internal static bool ParseRuleBody(Rule rule, Scan scan)
         {
-            RuleAction? action;
-            while ((action = RuleAction.ParseAction(scan)) != null)
+            while (RuleAction.ParseAction(scan) is { } action)
             {
                 rule.AddAction(action);
             }

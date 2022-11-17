@@ -65,18 +65,12 @@ namespace Eisenscript
                     case TokenType.Number:
                         var reps = scan.NextInt();
                         scan.Consume(TokenType.Mult);
-                        if (loops == null)
-                        {
-                            loops = new List<TransformationLoop>();
-                        }
+                        loops ??= new List<TransformationLoop>();
                         loops.Add(new TransformationLoop(reps, Transformation.ParseTransform(scan)));
                         break;
 
                     case TokenType.OpenBrace:
-                        if (loops == null)
-                        {
-                            loops = new List<TransformationLoop>();
-                        }
+                        loops ??= new List<TransformationLoop>();
                         loops.Add(new TransformationLoop(1, Transformation.ParseTransform(scan)));
                         break;
 

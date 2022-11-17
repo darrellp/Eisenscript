@@ -26,10 +26,7 @@ public struct RGBA
 
     internal (double hue, double sat, double val) HsvFromRgb()
     {
-        Color clr = Color.FromArgb(A, R, G, B);
-
-        int max = Math.Max(R, Math.Max(G, B));
-        int min = Math.Min(R, Math.Min(G, B));
+        var clr = Color.FromArgb(A, R, G, B);
 
         var hue = clr.GetHue();
         var sat = clr.GetSaturation();

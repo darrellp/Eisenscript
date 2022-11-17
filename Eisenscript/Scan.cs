@@ -62,8 +62,7 @@ namespace Eisenscript
                 "Eisenscript.Data.Internet Colors.csv");
             Debug.Assert(stmColors != null, nameof(stmColors) + " != null");
             var trColors = new StreamReader(stmColors);
-            string? line;
-            while ((line = trColors.ReadLine()) != null)
+            while (trColors.ReadLine() is { } line)
             {
                 if (line[0] == '/' && line[1] == '/')
                 {
@@ -100,8 +99,7 @@ namespace Eisenscript
         private static string Canonize(TextReader input)
         {
             var sb = new StringBuilder();
-            string? line;
-            while ((line = input.ReadLine()) != null)
+            while (input.ReadLine() is { } line)
             {
                 sb.Append(line);
                 sb.Append('\n');
@@ -415,7 +413,7 @@ namespace Eisenscript
                     continue;
                 }
 
-                return str[0..iLast];
+                return str[..iLast];
             }
 
             return str;
@@ -436,7 +434,7 @@ namespace Eisenscript
                     continue;
                 }
 
-                return str[0..iLast];
+                return str[..iLast];
             }
 
             return str;

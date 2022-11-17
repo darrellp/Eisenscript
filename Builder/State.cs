@@ -17,7 +17,7 @@ namespace Builder
         private readonly Matrix4x4 _mtxInput;
         private readonly SSBuilder _builder;
         // Solid red ala Structure Synth
-        private readonly RGBA _rgbaInput = new RGBA(255, 0, 0);
+        private readonly RGBA _rgbaInput = new(255, 0, 0);
         internal RuleAction Action => CurrentRule.Actions[ActionIndex];
         #endregion
 
