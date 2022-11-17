@@ -103,9 +103,7 @@ public class Transformation
 
             if (Strength != 0)
             {
-                h = h * (1 - Strength) + _hBlend * Strength;
-                s = s * (1 - Strength) + _sBlend * Strength;
-                b = b * (1 - Strength) + _vBlend * Strength;
+                (h, s, b) = RGBA.LerpHSV(h, s, b, _hBlend, _sBlend, _vBlend, Strength);
             }
 
             retRgba = RGBA.RgbFromHsv(h, s, b);
@@ -114,12 +112,12 @@ public class Transformation
 
         if (_scaleAlpha != 0)
         {
-            rgba.A = (byte)Math.Max(255.99, _scaleAlpha * rgba.A);
+            retRgba.A = (byte)Math.Min(255.99, _scaleAlpha * rgba.A + 0.5);
         }
 
         if (Strength != 0)
         {
-            rgba.A = (byte)(rgba.A * (1 - Strength) + _aBlend * Strength);
+            retRgba.A = (byte)(rgba.A * (1 - Strength) + _aBlend * Strength);
         }
         return (retMatrix, retRgba, true);
     }

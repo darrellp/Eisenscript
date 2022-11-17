@@ -206,11 +206,17 @@ namespace Eisenscript
             _ich = newPosition;
         }
 
-        private string PeekWord()
+        private string PeekWord(bool fOnlyAlpha = false)
         {
             var ichReadAhead = _ich;
-
-            while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) { }
+            if (fOnlyAlpha)
+            {
+                while (char.IsLetter(_canonicalText[ichReadAhead++]) && !FinishedLine) {}
+            }
+            else
+            {
+                while (!char.IsWhiteSpace(_canonicalText[ichReadAhead++]) && !FinishedLine) { }
+            }
 
             // ichReadAhead is now one char beyond the end of our word
             return _canonicalText[_ich..(ichReadAhead - 1)];
@@ -323,17 +329,18 @@ namespace Eisenscript
 
             if (Cur == '#')
             {
+                byte r;
+                byte g;
+                byte b;
+                byte a = 0xff;
+
                 if (word == "#define")
                 {
                     // special exception for #define
                     return false;
                 }
 
-                byte r;
-                byte g;
-                byte b;
-                byte a = 0xff;
-
+                word = StripTrailingNonHex(word);
                 switch (word.Length)
                 {
                     case 4:
@@ -377,10 +384,14 @@ namespace Eisenscript
                 _tokens.Add(new Token(new RGBA(r, g, b, a), _iLine));
                 ret = true;
             }
-            else if (InternetColors.ContainsKey(word))
+            else
             {
-                _tokens.Add(new Token(InternetColors[word], _iLine));
-                ret = true;
+                word = StripTrailingNonletters(word);
+                if (InternetColors.ContainsKey(word))
+                {
+                    _tokens.Add(new Token(InternetColors[word], _iLine));
+                    ret = true;
+                }
             }
 
             if (ret)
@@ -391,6 +402,44 @@ namespace Eisenscript
                 }
             }
             return ret;
+        }
+
+        private string StripTrailingNonHex(string str)
+        {
+            // Skip the leading '#'
+            for (var iLast = 1; iLast < str.Length; iLast++)
+            {
+                var chCur = char.ToLower(str[iLast]);
+                if (char.IsDigit(chCur) || chCur is <= 'f' and >= 'a')
+                {
+                    continue;
+                }
+
+                return str[0..iLast];
+            }
+
+            return str;
+        }
+
+        private string StripTrailingNonletters(string str)
+        {
+            if (!char.IsLetter(str[0]))
+            {
+                return "";
+            }
+
+            for (var iLast = 1; iLast < str.Length; iLast++)
+            {
+                var chCur = char.ToLower(str[iLast]);
+                if (char.IsLetter(chCur))
+                {
+                    continue;
+                }
+
+                return str[0..iLast];
+            }
+
+            return str;
         }
         #endregion
 

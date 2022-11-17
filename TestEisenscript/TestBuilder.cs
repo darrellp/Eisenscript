@@ -223,5 +223,44 @@ rule r1 {3 * {color blue x 2} box}"[2..];
             Assert.IsTrue(colors.All(r => r.A == 255 && r.R == 0 && r.G == 0 && r.B == 255));
         }
 
+
+        [TestMethod]
+        public void TestRGBAAlpha()
+        {
+            string testScript = @"
+r1
+rule r1 {2 * {a 0.5 x 2} box}"[2..];
+            RGBA[] colors = new RGBA[2];
+            int callCount = 0;
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder((t, m, r) =>
+            {
+                colors[callCount++] = r;
+            });
+            builder.Build(tr);
+            Assert.AreEqual(2, callCount);
+            Assert.AreEqual(new RGBA(255, 0, 0, 128), colors[0]);
+            Assert.AreEqual(new RGBA(255, 0, 0, 64), colors[1]);
+        }
+        [TestMethod]
+        public void TestRGBBlend()
+        {
+            string testScript = @"
+r1
+rule r1 {{color #feb} {color red} 2 * {blend black 0.5 x 2} box}"[2..];
+            RGBA[] colors = new RGBA[2];
+            int callCount = 0;
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder((t, m, r) =>
+            {
+                colors[callCount++] = r;
+            });
+            builder.Build(tr);
+            Assert.AreEqual(2, callCount);
+            Assert.AreEqual(new RGBA(96, 32, 32), colors[0]);
+            Assert.AreEqual(new RGBA(40, 24, 24), colors[1]);
+        }
     }
 }

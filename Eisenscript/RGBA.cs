@@ -1,4 +1,6 @@
 ﻿// ReSharper disable once IdentifierTypo
+using System.Drawing;
+
 namespace Eisenscript;
 
 // ReSharper disable once InconsistentNaming
@@ -22,72 +24,100 @@ public struct RGBA
         A = a;
     }
 
-    internal static RGBA RgbFromHsv(double hue, double saturation, double value)
-    {
-        var hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
-        var f = hue / 60 - Math.Floor(hue / 60);
-
-        value *= 255;
-        var v = Convert.ToByte(value);
-        var p = Convert.ToByte(value * (1 - saturation));
-        var q = Convert.ToByte(value * (1 - f * saturation));
-        var t = Convert.ToByte(value * (1 - (1 - f) * saturation));
-
-        return hi switch
-        {
-            0 => new RGBA(v, t, p),
-            1 => new RGBA(q, v, p),
-            2 => new RGBA(p, v, t),
-            3 => new RGBA(p, q, v),
-            4 => new RGBA(t, p, v),
-            _ => new RGBA(v, p, q)
-        };
-    }
-
     internal (double hue, double sat, double val) HsvFromRgb()
     {
+        Color clr = Color.FromArgb(A, R, G, B);
+
         int max = Math.Max(R, Math.Max(G, B));
         int min = Math.Min(R, Math.Min(G, B));
 
-        var hue = GetHue();
-        var sat = (max == 0) ? 0 : 1d - (1d * min / max);
-        var val = max / 255d;
+        var hue = clr.GetHue();
+        var sat = clr.GetSaturation();
+        var val = clr.GetBrightness();
         return (hue, sat, val);
     }
 
-    private double GetHue()
+    public static (double hue, double sat, double val) LerpHSV(
+        double h1, double s1, double v1,
+        double h2, double s2, double v2, double t)
     {
-        double hue;
-
-        var max = Math.Max(R, Math.Max(G, B));
-        var min = Math.Min(R, Math.Min(G, B));
-        var delta = (double)(max - min);
-        if (delta == 0)
+        // Hue interpolation
+        double h = 0;
+        if (s2 == 0 || v2 is 0 or 1)
         {
-            return 0.0;
+            // For black, hue is unde
+            h2 = h1;
+        }
+        double d = h2 - h1;
+        if (h1 > h2)
+        {
+            (h1, h2) = (h2, h1);
+            d = -d;
+            t = 1 - t;
         }
 
-        if (max == R)
+        if (d > 0.5)
         {
-            hue = (G - B) / delta;
-        }
-        else if (max == B)
-        {
-            hue = 2.0 + (B - R) / delta;
+            h1 = h1 + 360;
+            h = (h1 + t * (h2 - h1)) % 360;
         }
         else
         {
-            hue = 4 + (R - G) / delta;
+            h = h1 + t * d;
         }
 
-        hue *= 60;
-        if (hue < 0)
-        {
-            hue += 360;
-        }
-
-        return hue;
+        // Interpolates the rest
+        return 
+        (
+            h,                  // H
+            s1 + t * (s2-s1),   // S
+            v1 + t * (v2-v1)    // V
+        );
     }
 
+    public override string ToString()
+    {
+        return $"({R}, {G}, {B}, {A})";
+    }
 
+    public static RGBA RgbFromHsv(double h, double s, double b)
+    {
+        if (0f > h || 360f < h) throw new ArgumentOutOfRangeException("h", h, "Invalid Hue");
+        if (0f > s || 1f < s) throw new ArgumentOutOfRangeException("s", s, "Invalid Saturation");
+        if (0f > b || 1f < b) throw new ArgumentOutOfRangeException("b", b, "Invalid Brightness");
+        if (0 == s)
+            return new RGBA(Convert.ToByte(b * 255), Convert.ToByte(b * 255), Convert.ToByte(b * 255));
+        double fMax, fMid, fMin;
+        if (0.5 < b)
+        {
+            fMax = b - b * s + s;
+            fMin = b + b * s - s;
+        }
+        else
+        {
+            fMax = b + b * s;
+            fMin = b - b * s;
+        }
+
+        var iSextant = (int) Math.Floor(h / 60f);
+        if (300f <= h) h -= 360f;
+        h /= 60f;
+        h -= 2f * (float) Math.Floor((iSextant + 1f) % 6f / 2f);
+        if (0 == iSextant % 2)
+            fMid = h * (fMax - fMin) + fMin;
+        else
+            fMid = fMin - h * (fMax - fMin);
+        var iMax = Convert.ToByte(fMax * 255);
+        var iMid = Convert.ToByte(fMid * 255);
+        var iMin = Convert.ToByte(fMin * 255);
+        switch (iSextant)
+        {
+            case 1: return new RGBA(iMid, iMax, iMin);
+            case 2: return new RGBA(iMin, iMax, iMid);
+            case 3: return new RGBA(iMin, iMid, iMax);
+            case 4: return new RGBA(iMid, iMin, iMax);
+            case 5: return new RGBA(iMax, iMin, iMid);
+            default: return new RGBA(iMax, iMid, iMin);
+        }
+    }
 }

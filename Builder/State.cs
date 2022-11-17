@@ -31,13 +31,9 @@ namespace Builder
             SetActionIndex(0);
         }
 
-        public State(SSBuilder builder, Rule currentRule, RGBA rgbaInput, Matrix4x4? mtxInput = null)
+        public State(SSBuilder builder, Rule currentRule, RGBA rgbaInput, Matrix4x4? mtxInput = null) : this(builder, currentRule, mtxInput)
         {
-            CurrentRule = currentRule;
-            _mtxInput = mtxInput ?? Matrix4x4.Identity;
             _rgbaInput = rgbaInput;
-            _builder = builder;
-            SetActionIndex(0);
         }
 
 #pragma warning restore CS8618
@@ -157,7 +153,7 @@ namespace Builder
                 fContinue = true;
                 // TODO: Use ColorChanged?
                 var (prevMatrix, prevRgba, _) =
-                    Action.Loops[index].Transform.DoTransform(LoopMatrices[index], _rgbaInput);
+                    Action.Loops[index].Transform.DoTransform(LoopMatrices[index], LoopRgbas[index]);
 
                 LoopMatrices[index] = prevMatrix;
                 LoopRgbas[index] = prevRgba;
@@ -166,6 +162,7 @@ namespace Builder
                 {
                     (prevMatrix, prevRgba, _) = Action.Loops[iIndex].Transform.DoTransform(prevMatrix, prevRgba);
                     LoopMatrices[iIndex] = prevMatrix;
+                    LoopRgbas[iIndex] = prevRgba;
                 }
 
                 break;
