@@ -82,9 +82,9 @@ public struct RGBA
 
     public static RGBA RgbFromHsv(double h, double s, double b)
     {
-        if (0f > h || 360f < h) throw new ArgumentOutOfRangeException("h", h, "Invalid Hue");
-        if (0f > s || 1f < s) throw new ArgumentOutOfRangeException("s", s, "Invalid Saturation");
-        if (0f > b || 1f < b) throw new ArgumentOutOfRangeException("b", b, "Invalid Brightness");
+        if (h is < 0f or > 360f) throw new ArgumentOutOfRangeException("h", h, "Invalid Hue");
+        if (s is < 0f or > 1f) throw new ArgumentOutOfRangeException("s", s, "Invalid Saturation");
+        if (b is < 0f or > 1f) throw new ArgumentOutOfRangeException("b", b, "Invalid Brightness");
         if (0 == s)
             return new RGBA(Convert.ToByte(b * 255), Convert.ToByte(b * 255), Convert.ToByte(b * 255));
         double fMax, fMid, fMin;
@@ -99,10 +99,13 @@ public struct RGBA
             fMin = b - b * s;
         }
 
-        var iSextant = (int) Math.Floor(h / 60f);
-        if (300f <= h) h -= 360f;
-        h /= 60f;
-        h -= 2f * (float) Math.Floor((iSextant + 1f) % 6f / 2f);
+        var iSextant = (int) Math.Floor(h / 60);
+        if (300 <= h)
+        {
+            h -= 360;
+        }
+        h /= 60;
+        h -= 2 * Math.Floor((iSextant + 1) % 6 / 2.0);
         if (0 == iSextant % 2)
             fMid = h * (fMax - fMin) + fMin;
         else

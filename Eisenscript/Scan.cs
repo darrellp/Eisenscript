@@ -386,7 +386,7 @@ namespace Eisenscript
             }
             else
             {
-                word = StripTrailingNonletters(word);
+                word = StripTrailingJunk(word);
                 if (InternetColors.ContainsKey(word))
                 {
                     _tokens.Add(new Token(InternetColors[word], _iLine));
@@ -421,7 +421,7 @@ namespace Eisenscript
             return str;
         }
 
-        private string StripTrailingNonletters(string str)
+        private string StripTrailingJunk(string str)
         {
             if (!char.IsLetter(str[0]))
             {
@@ -431,7 +431,7 @@ namespace Eisenscript
             for (var iLast = 1; iLast < str.Length; iLast++)
             {
                 var chCur = char.ToLower(str[iLast]);
-                if (char.IsLetter(chCur))
+                if (char.IsLetterOrDigit(chCur))
                 {
                     continue;
                 }
