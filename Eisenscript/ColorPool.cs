@@ -49,7 +49,7 @@
                 {
                     throw new ParserException("Unrecognized Colorpool type", line);
                 }
-                return new ColorPool(scan.Next().Type);
+                return new ColorPool(type);
             }
 
             // Color list

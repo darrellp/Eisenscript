@@ -58,7 +58,7 @@ public class Transformation
     #endregion
 
     #region Transformation
-    public (Matrix4x4, RGBA, bool colorChanged) DoTransform(Matrix4x4 matrix, RGBA rgba)
+    public (Matrix4x4, RGBA, bool colorChanged) DoTransform(Matrix4x4 matrix, RGBA rgba, Rules rules)
     {
         if (!_colorValidated)
         {
@@ -78,6 +78,11 @@ public class Transformation
         if (IsAbsoluteColor)
         {
             return (retMatrix, AbsoluteColor, true);
+        }
+
+        if (IsRandomColor)
+        {
+            return (retMatrix, rules.Pool.ChooseColor(rules.RndColors), true);
         }
 
         if (_hsbRequired)

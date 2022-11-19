@@ -42,7 +42,7 @@ public struct RGBA
         double h = 0;
         if (s2 == 0 || v2 is 0 or 1)
         {
-            // For black, hue is unde
+            // For black/white, hue is undefined
             h2 = h1;
         }
         double d = h2 - h1;

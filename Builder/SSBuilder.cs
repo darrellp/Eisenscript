@@ -39,7 +39,7 @@ namespace Builder
             }
             foreach (var rule in CurrentRules.InitRules)
             {
-                StateStack.Push(new State(this, rule));
+                StateStack.Push(new State(this, rule, CurrentRules));
                 Execute();
             }
         }

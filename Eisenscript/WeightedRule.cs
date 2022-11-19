@@ -3,7 +3,6 @@
     public class WeightedRule
     {
         private readonly List<Rule> _rules = new();
-        private readonly Random _rnd = new();
         private bool _isNormalized;
 
         internal void AddRule(Rule rule)
@@ -20,7 +19,7 @@
             }
         }
 
-        public Rule Pick()
+        public Rule Pick(Random rnd)
         {
             if (!_isNormalized)
             {
@@ -28,7 +27,7 @@
                 _isNormalized = true;
             }
 
-            var weight = _rnd.NextDouble();
+            var weight = rnd.NextDouble();
             var total = 0.0;
             var iSelect = -1;
 

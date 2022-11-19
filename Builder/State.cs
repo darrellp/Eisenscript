@@ -16,6 +16,7 @@ namespace Builder
         internal int[] LoopIndices;
         private readonly Matrix4x4 _mtxInput;
         private readonly SSBuilder _builder;
+        private readonly Rules _rules;
         // Solid red ala Structure Synth
         private readonly RGBA _rgbaInput = new(255, 0, 0);
         internal RuleAction Action => CurrentRule.Actions[ActionIndex];
@@ -23,15 +24,16 @@ namespace Builder
 
         #region Constructor
 #pragma warning disable CS8618
-        public State(SSBuilder builder, Rule currentRule, Matrix4x4? mtxInput = null)
+        public State(SSBuilder builder, Rule currentRule, Rules rules, Matrix4x4? mtxInput = null)
         {
             CurrentRule = currentRule;
             _mtxInput = mtxInput ?? Matrix4x4.Identity;
             _builder = builder;
+            _rules=rules;
             SetActionIndex(0);
         }
 
-        public State(SSBuilder builder, Rule currentRule, RGBA rgbaInput, Matrix4x4? mtxInput = null) : this(builder, currentRule, mtxInput)
+        public State(SSBuilder builder, Rule currentRule, Rules rules, RGBA rgbaInput, Matrix4x4? mtxInput = null) : this(builder, currentRule, rules, mtxInput)
         {
             _rgbaInput = rgbaInput;
         }
@@ -62,7 +64,7 @@ namespace Builder
             for (var i = 0; i < loopCount; i++)
             {
                 LoopIndices[i] = 0;
-                (curMatrix, curRgba, _) = Action.Loops[i].Transform.DoTransform(curMatrix, curRgba);
+                (curMatrix, curRgba, _) = Action.Loops[i].Transform.DoTransform(curMatrix, curRgba, _rules);
                 LoopMatrices[i] = curMatrix;
                 LoopRgbas[i] = curRgba;
             }
@@ -93,7 +95,7 @@ namespace Builder
                     }
                     VerboseMsg($"Invoking rule {Action.PostRule}");
                     var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
-                    builder.StateStack.Push(new State(_builder, newRule));
+                    builder.StateStack.Push(new State(_builder, newRule, _rules));
                     NextAction();
                 }
                 else
@@ -128,7 +130,7 @@ namespace Builder
                 }
                 VerboseMsg($"Invoking rule {Action.PostRule}");
                 var newRule = builder.CurrentRules!.PickRule(Action.PostRule);
-                builder.StateStack.Push(new State(_builder, newRule, rgbaExecution, mtxExecution));
+                builder.StateStack.Push(new State(_builder, newRule, _rules, rgbaExecution, mtxExecution));
             }
             else
             {
@@ -153,14 +155,14 @@ namespace Builder
                 fContinue = true;
                 // TODO: Use ColorChanged?
                 var (prevMatrix, prevRgba, _) =
-                    Action.Loops[index].Transform.DoTransform(LoopMatrices[index], LoopRgbas[index]);
+                    Action.Loops[index].Transform.DoTransform(LoopMatrices[index], LoopRgbas[index], _rules);
 
                 LoopMatrices[index] = prevMatrix;
                 LoopRgbas[index] = prevRgba;
 
                 for (var iIndex = index + 1; iIndex < cLoops; iIndex++)
                 {
-                    (prevMatrix, prevRgba, _) = Action.Loops[iIndex].Transform.DoTransform(prevMatrix, prevRgba);
+                    (prevMatrix, prevRgba, _) = Action.Loops[iIndex].Transform.DoTransform(prevMatrix, prevRgba, _rules);
                     LoopMatrices[iIndex] = prevMatrix;
                     LoopRgbas[iIndex] = prevRgba;
                 }
