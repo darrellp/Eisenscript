@@ -21,12 +21,14 @@ box"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt = t;
-                mtx = m;
+                tt = a.Type;
+                mtx = a.Matrix;
                 callCount++;
             });
+
             builder.Build(tr);
             Assert.AreEqual(1, callCount);
             Assert.AreEqual(TokenType.Box, tt);
@@ -43,10 +45,11 @@ box"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt = t;
-                mtx = m;
+                tt = a.Type;
+                mtx = a.Matrix;
                 callCount++;
             });
             builder.Build(tr);
@@ -67,10 +70,11 @@ rule r1 {3 * {x 2 y 3} box}"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt[callCount] = t;
-                matrices[callCount++] = m;
+                tt[callCount] = a.Type;
+                matrices[callCount++] = a.Matrix;
             });
             builder.Build(tr);
             Assert.AreEqual(3, callCount);
@@ -94,10 +98,11 @@ rule r1 {2 * {x 2} 2 * {y 3} box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt[callCount] = t;
-                matrices[callCount++] = m;
+                tt[callCount] = a.Type;
+                matrices[callCount++] = a.Matrix;
             });
             builder.Build(tr);
             Assert.AreEqual(4, callCount);
@@ -124,10 +129,11 @@ rule r2 {box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt[callCount] = t;
-                matrices[callCount++] = m;
+                tt[callCount] = a.Type;
+                matrices[callCount++] = a.Matrix;
             });
             builder.Build(tr);
             Assert.AreEqual(4, callCount);
@@ -154,10 +160,11 @@ rule r2 {box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt[callCount] = t;
-                matrices[callCount++] = m;
+                tt[callCount] = a.Type;
+                matrices[callCount++] = a.Matrix;
             });
             builder.Build(tr);
             Assert.AreEqual(4, callCount);
@@ -184,10 +191,11 @@ rule r1 { {x 2} r1 box}"[2..];
             var callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, _) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                tt[callCount] = t;
-                matrices[callCount++] = m;
+                tt[callCount] = a.Type;
+                matrices[callCount++] = a.Matrix;
             });
             builder.Build(tr);
             Assert.AreEqual(4, callCount);
@@ -214,9 +222,10 @@ rule r1 {3 * {color blue x 2} box}"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, r) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                colors[callCount++] = r;
+                colors[callCount++] = a.Rgba;
             });
             builder.Build(tr);
             Assert.AreEqual(3, callCount);
@@ -234,9 +243,10 @@ rule r1 {2 * {a 0.5 x 2} box}"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, r) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                colors[callCount++] = r;
+                colors[callCount++] = a.Rgba;
             });
             builder.Build(tr);
             Assert.AreEqual(2, callCount);
@@ -254,9 +264,10 @@ rule r1 {{color #feb} {color red} 2 * {blend black 0.5 x 2} box}"[2..];
             int callCount = 0;
 
             var tr = new StringReader(testScript);
-            var builder = new SSBuilder((t, m, r) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                colors[callCount++] = r;
+                colors[callCount++] = a.Rgba;
             });
             builder.Build(tr);
             Assert.AreEqual(2, callCount);
@@ -275,9 +286,10 @@ rule r1 {{color random x 2} box}"[2..];
             RGBA[] colors = new RGBA[1];
             int callCount = 0;
 
-            var builder = new SSBuilder((t, m, r) =>
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
             {
-                colors[callCount++] = r;
+                colors[callCount++] = a.Rgba;
             });
             builder.Build(new StringReader(testScript));
             Assert.AreEqual(1, callCount);

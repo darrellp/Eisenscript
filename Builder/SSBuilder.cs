@@ -8,28 +8,16 @@ namespace Builder
     public class SSBuilder
     {
         #region Private variables
-        internal Action<Matrix4x4>? SetMatrix { get; }
-        internal Action<Matrix4x4>? MulMatrix { get; }
-        internal Action<TokenType, Matrix4x4, RGBA> Draw { get; }
         internal Rules? CurrentRules { get; private set; }
         internal Stack<State> StateStack { get; } = new();
         internal int RecurseDepth => StateStack.Count;
         internal bool AtStackLimit => StateStack.Count >= CurrentRules!.MaxDepth - 1;
         #endregion
 
-        public SSBuilder(Action<TokenType, Matrix4x4, RGBA> draw,
-            Action<Matrix4x4>? setMatrix = null,
-            Action<Matrix4x4>? mulMatrix = null)
-        {
-            if (SetMatrix == null ^ MulMatrix == null)
-            {
-                // Both should be null or non-null.  Makes no sense to have one without the other.
-                throw new ArgumentException("Both MulMatrix and SetMatrix must be null or non-null in SSBuilder constructor");
-            }
-            SetMatrix = setMatrix;
-            MulMatrix = mulMatrix;
-            Draw = draw;
-        }
+        #region Public variables
+        public event DrawEventHandler? DrawEvent;
+        public event RgbaEventHandler? BackgroundEvent;
+        #endregion
 
         public List<ParserException> Build(TextReader input)
         {
@@ -58,5 +46,40 @@ namespace Builder
                 state.Execute(this);
             }
         }
+
+        internal virtual void OnRaiseDrawEvent(TokenType type, Matrix4x4 mtx, RGBA rgba)
+        {
+            // Make a temporary copy of the event to avoid possibility of
+            // a race condition if the last subscriber unsubscribes
+            // immediately after the null check and before the event is raised.
+            var raiseEvent = DrawEvent;
+
+            // Event will be null if there are no subscribers
+            if (raiseEvent != null)
+            {
+                var args = new DrawArgs(type, mtx, rgba);
+
+                // Call to raise the event.
+                raiseEvent(this, args);
+            }
+        }
+
+        internal virtual void OnRaiseBackgroundEvent(Matrix4x4 mtx, RGBA rgba)
+        {
+            // Make a temporary copy of the event to avoid possibility of
+            // a race condition if the last subscriber unsubscribes
+            // immediately after the null check and before the event is raised.
+            var raiseEvent = BackgroundEvent;
+
+            // Event will be null if there are no subscribers
+            if (raiseEvent != null)
+            {
+                var args = new RgbaArgs(rgba);
+
+                // Call to raise the event.
+                raiseEvent(this, args);
+            }
+        }
+
     }
 }

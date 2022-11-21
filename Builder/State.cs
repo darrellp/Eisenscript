@@ -101,7 +101,7 @@ namespace Builder
                 else
                 {
                     VerboseMsg($"Drawing a {Action.Type}");
-                    builder.Draw(Action.Type, _mtxInput, _rgbaInput);
+                    builder.OnRaiseDrawEvent(Action.Type, _mtxInput, _rgbaInput);
                     NextAction();
                 }
 
@@ -135,7 +135,7 @@ namespace Builder
             else
             {
                 VerboseMsg($"Drawing a {Action.Type}");
-                builder.Draw(Action.Type, mtxExecution, rgbaExecution);
+                builder.OnRaiseDrawEvent(Action.Type, mtxExecution, rgbaExecution);
             }
 
             // ...and adjust indices/matrices for next step in the loops

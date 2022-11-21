@@ -17,11 +17,16 @@ errorRule
 r1
 rule r1 {{color random x 2} box}"[2..];
 
-            var builder = new SSBuilder((t, m, r) =>
-            {});
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) => { });
             var errors = builder.Build(new StringReader(testScript));
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("Undefined rule: errorRule", errors[0].Message);
+        }
+
+        private void Builder_DrawEvent(object sender, Eisenscript.DrawArgs args)
+        {
+            throw new System.NotImplementedException();
         }
 
         [TestMethod]
@@ -31,13 +36,27 @@ rule r1 {{color random x 2} box}"[2..];
 seed
 r1
 rule r1 {{color random x 2} box}"[2..];
-            var builder = new SSBuilder((t, m, r) =>
-                { });
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) => { });
             var errors = builder.Build(new StringReader(testScript));
             Assert.AreEqual(1, errors.Count);
             Assert.AreEqual("Invalid/empty rule body", errors[0].Message);
             Assert.AreEqual(0, errors[0].Line);
         }
 
+        [TestMethod]
+        public void TestMissingBraces()
+        {
+            string testScript = @"
+seed
+r1
+rule r1 {{color random x 2} box"[2..];
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) => { });
+            var errors = builder.Build(new StringReader(testScript));
+            Assert.AreEqual(1, errors.Count);
+            Assert.AreEqual("Invalid/empty rule body", errors[0].Message);
+            Assert.AreEqual(0, errors[0].Line);
+        }
     }
 }
