@@ -12,6 +12,7 @@ namespace Builder
         internal Stack<State> StateStack { get; } = new();
         internal int RecurseDepth => StateStack.Count;
         internal bool AtStackLimit => StateStack.Count >= CurrentRules!.MaxDepth - 1;
+        internal int objCount = 0;
         #endregion
 
         #region Public variables
@@ -28,11 +29,16 @@ namespace Builder
                 return parser.Exceptions;
             }
 
+            OnRaiseBackgroundEvent(CurrentRules.Background);
 
             foreach (var rule in CurrentRules.InitRules)
             {
                 StateStack.Push(new State(this, rule, CurrentRules));
                 Execute();
+                if (objCount >= CurrentRules!.MaxObjects)
+                {
+                    break;
+                }
             }
 
             return new List<ParserException>();
@@ -40,7 +46,7 @@ namespace Builder
 
         private void Execute()
         {
-            while (StateStack.Count > 0)
+            while (StateStack.Count > 0 && objCount < CurrentRules!.MaxObjects)
             {
                 var state = StateStack.Peek();
                 state.Execute(this);
@@ -62,9 +68,11 @@ namespace Builder
                 // Call to raise the event.
                 raiseEvent(this, args);
             }
+
+            ++objCount;
         }
 
-        internal virtual void OnRaiseBackgroundEvent(Matrix4x4 mtx, RGBA rgba)
+        internal virtual void OnRaiseBackgroundEvent(RGBA rgba)
         {
             // Make a temporary copy of the event to avoid possibility of
             // a race condition if the last subscriber unsubscribes

@@ -60,6 +60,26 @@ box"[2..];
         }
 
         [TestMethod]
+        public void TestBackground()
+        {
+            RGBA bgnd = new RGBA();
+            var testScript = @"
+set background blue"[2..];
+            var callCount = 0;
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder();
+            builder.BackgroundEvent += ((s, a) =>
+            {
+                bgnd = a.Rgba;
+                callCount++;
+            });
+            builder.Build(tr);
+            Assert.AreEqual(1, callCount);
+            Assert.AreEqual(new RGBA(0, 0, 255, 255), bgnd);
+        }
+
+        [TestMethod]
         public void TestRuleCall()
         {
             string testScript = @"
@@ -298,6 +318,23 @@ rule r1 {{color random x 2} box}"[2..];
             builder.Build(new StringReader(testScript));
             Assert.AreEqual(1, callCount);
             Assert.IsTrue(colors.All(r => r.A == 255 && r.R == 197 && r.G == 103 && r.B == 42));
+        }
+
+        [TestMethod]
+        public void TestMaxObjects()
+        {
+            string testScript = @"
+set maxobjects 4
+100 * {x 1} box"[2..];
+            int callCount = 0;
+
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
+            {
+                callCount++;
+            });
+            builder.Build(new StringReader(testScript));
+            Assert.AreEqual(4, callCount);
         }
     }
 }

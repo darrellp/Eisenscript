@@ -9,7 +9,7 @@ namespace Eisenscript
         private int _seedInit = -1;
 
         public int MaxDepth { get; set; } = 1000;
-        public int MaxObjects { get; set; } = -1;
+        public int MaxObjects { get; set; } = int.MaxValue;
         public double MinSize { get; set; } = int.MaxValue;
         public double MaxSize { get; set; } = int.MinValue;
 
