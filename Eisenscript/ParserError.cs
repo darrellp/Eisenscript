@@ -1,6 +1,6 @@
 ﻿namespace Eisenscript
 {
-    internal class ParserException : Exception
+    public class ParserException : Exception
     {
         internal int Line
         {

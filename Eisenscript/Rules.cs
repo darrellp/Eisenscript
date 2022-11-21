@@ -73,5 +73,32 @@ namespace Eisenscript
         }
 
         public int RuleCount => _weightedRules.Values.Select(wr => wr.Count).Sum();
+
+        public void CheckValidity()
+        {
+            foreach (var rule in InitRules)
+            {
+                foreach (var ruleAction in rule.Actions)
+                {
+                    if (ruleAction.PostRule != null && !_weightedRules.ContainsKey(ruleAction.PostRule))
+                    {
+                        throw new ParserException($"Undefined rule: {ruleAction.PostRule}", -1);
+                    }
+                }
+            }
+            foreach (var wrule in _weightedRules.Values)
+            {
+                foreach (var rule in wrule.RulesList)
+                {
+                    foreach (var ruleAction in rule.Actions)
+                    {
+                        if (ruleAction.PostRule != null && !_weightedRules.ContainsKey(ruleAction.PostRule))
+                        {
+                            throw new ParserException($"Undefined rule: {ruleAction.PostRule}", -1);
+                        }
+                    }
+                }
+            }
+        }
     }
 }

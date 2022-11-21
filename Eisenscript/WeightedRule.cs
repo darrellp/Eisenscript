@@ -2,18 +2,18 @@
 {
     public class WeightedRule
     {
-        private readonly List<Rule> _rules = new();
+        internal List<Rule> RulesList { get; } = new();
         private bool _isNormalized;
 
         internal void AddRule(Rule rule)
         {
-            _rules.Add(rule);
+            RulesList.Add(rule);
         }
 
         private void Normalize()
         {
-            var total = _rules.Select(r => r.Weight).Sum();
-            foreach (var rule in _rules)
+            var total = RulesList.Select(r => r.Weight).Sum();
+            foreach (var rule in RulesList)
             {
                 rule.Weight /= total;
             }
@@ -33,12 +33,12 @@
 
             while (total < weight)
             {
-                total += _rules[++iSelect].Weight;
+                total += RulesList[++iSelect].Weight;
             }
 
-            return _rules[iSelect];
+            return RulesList[iSelect];
         }
 
-        internal int Count => _rules.Count;
+        internal int Count => RulesList.Count;
     }
 }

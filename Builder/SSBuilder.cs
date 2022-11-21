@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Text.RegularExpressions;
 using Eisenscript;
 
 namespace Builder
@@ -30,18 +31,23 @@ namespace Builder
             Draw = draw;
         }
 
-        public void Build(TextReader input)
+        public List<ParserException> Build(TextReader input)
         {
-            CurrentRules = new Parser(input).Rules();
-            if (CurrentRules == null)
+            var parser = new Parser(input);
+            CurrentRules = parser.Rules();
+            if (parser.Exceptions.Count > 0)
             {
-                throw new ArgumentException("Invalid script in Build()");
+                return parser.Exceptions;
             }
+
+
             foreach (var rule in CurrentRules.InitRules)
             {
                 StateStack.Push(new State(this, rule, CurrentRules));
                 Execute();
             }
+
+            return new List<ParserException>();
         }
 
         private void Execute()

@@ -6,14 +6,15 @@ namespace Eisenscript
         #region Private Variables
         private readonly Scan _scan;
         // ReSharper disable once NotAccessedField.Local
-        private List<ParserException> _exceptions;
+        public List<ParserException> Exceptions { get; }
+
         #endregion
 
         #region Constructor
         public Parser(TextReader input)
         {
             _scan = new Scan(input);
-            _exceptions = _scan.Exceptions;
+            Exceptions = _scan.Exceptions;
         }
         #endregion
 
@@ -25,16 +26,30 @@ namespace Eisenscript
 
         private Rules ParseProgram()
         {
+            if (_scan.Exceptions.Count > 0)
+            {
+                return null;
+            }
+
             var rules = new Rules();
 
-            while (!_scan.Done)
+            try
             {
-
-                if (!ParseSet(rules) && !Rule.ParseRule(rules, _scan) && !ParseDefine())
+                while (!_scan.Done)
                 {
-                    Rule.ParseStartingRule(rules, _scan);
+                    if (!ParseSet(rules) && !Rule.ParseRule(rules, _scan) && !ParseDefine())
+                    {
+                        Rule.ParseStartingRule(rules, _scan);
+                    }
                 }
+                rules.CheckValidity();
             }
+            catch (ParserException e)
+            {
+                Exceptions.Add(e);
+                return rules;
+            }
+
             return rules;
         }
 

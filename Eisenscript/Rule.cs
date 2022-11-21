@@ -50,11 +50,18 @@
 
         internal static bool ParseRuleBody(Rule rule, Scan scan)
         {
+            var fActionAdded = false;
+
             while (RuleAction.ParseAction(scan) is { } action)
             {
                 rule.AddAction(action);
+                fActionAdded = true;
             }
 
+            if (!fActionAdded)
+            {
+                throw new ParserException("Invalid/empty rule body", scan.Peek().Line);
+            }
             return true;
         }
 
