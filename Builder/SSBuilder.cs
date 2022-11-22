@@ -12,7 +12,7 @@ namespace Builder
         internal Stack<State> StateStack { get; } = new();
         internal int RecurseDepth => StateStack.Count;
         internal bool AtStackLimit => StateStack.Count >= CurrentRules!.MaxDepth - 1;
-        internal int objCount = 0;
+        internal int objCount;
         #endregion
 
         #region Public variables
@@ -22,6 +22,10 @@ namespace Builder
 
         public List<ParserException> Build(TextReader input)
         {
+            CurrentRules = null;
+            StateStack.Clear();
+            objCount = 0;
+
             var parser = new Parser(input);
             CurrentRules = parser.Rules();
             if (parser.Exceptions.Count > 0)

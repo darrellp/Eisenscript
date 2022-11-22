@@ -151,40 +151,40 @@ public class Transformation
             switch (type)
             {
                 case TokenType.X:
-                    matrix *= Matrix4x4.CreateTranslation((float)scan.NextDouble(), 0, 0);
+                    matrix = Matrix4x4.CreateTranslation((float)scan.NextDouble(), 0, 0) * matrix;
                     break;
 
                 case TokenType.Y:
-                    matrix *= Matrix4x4.CreateTranslation(0, (float)scan.NextDouble(), 0);
+                    matrix = Matrix4x4.CreateTranslation(0, (float)scan.NextDouble(), 0) * matrix;
                     break;
 
                 case TokenType.Z:
-                    matrix *= Matrix4x4.CreateTranslation(0, 0, (float)scan.NextDouble());
+                    matrix = Matrix4x4.CreateTranslation(0, 0, (float)scan.NextDouble()) * matrix;
                     break;
 
                 case TokenType.Rx:
-                    matrix *= Matrix4x4.CreateRotationX((float)scan.NextDouble());
+                    matrix = Matrix4x4.CreateRotationX((float)((Math.PI / 180) * scan.NextDouble())) * matrix;
                     break;
 
                 case TokenType.Ry:
-                    matrix *= Matrix4x4.CreateRotationY((float)scan.NextDouble());
+                    matrix = Matrix4x4.CreateRotationY((float)((Math.PI / 180) * scan.NextDouble())) * matrix;
                     break;
 
                 case TokenType.Rz:
-                    matrix *= Matrix4x4.CreateRotationZ((float)scan.NextDouble());
+                    matrix = Matrix4x4.CreateRotationZ((float)((Math.PI / 180) * scan.NextDouble())) * matrix;
                     break;
 
                 case TokenType.S:
                     var scaleX = (float)scan.NextDouble();
                     if (scan.Peek().Type != TokenType.Number)
                     {
-                        matrix *= Matrix4x4.CreateScale(scaleX);
+                        matrix = Matrix4x4.CreateScale(scaleX) * matrix;
                         break;
                     }
 
                     var scaleY = (float)scan.NextDouble();
                     var scaleZ = (float)scan.NextDouble();
-                    matrix *= Matrix4x4.CreateScale(scaleX, scaleY, scaleZ);
+                    matrix = Matrix4x4.CreateScale(scaleX, scaleY, scaleZ) * matrix;
                     break;
 
                 case TokenType.M:
@@ -197,23 +197,23 @@ public class Transformation
                     var m31 = (float)scan.NextDouble();
                     var m32 = (float)scan.NextDouble();
                     var m33 = (float)scan.NextDouble();
-                    matrix *= new Matrix4x4(
+                    matrix = new Matrix4x4(
                         m11, m12, m13, 0,
                         m21, m22, m23, 0,
                         m31, m32, m33, 0,
-                        0, 0, 0, 1);
+                        0, 0, 0, 1) * matrix;
                     break;
 
                 case TokenType.Fx:
-                    matrix *= Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0));
+                    matrix = Matrix4x4.CreateReflection(new Plane(1, 0, 0, 0)) * matrix;
                     break;
 
                 case TokenType.Fy:
-                    matrix *= Matrix4x4.CreateReflection(new Plane(0, 1, 0, 0));
+                    matrix = Matrix4x4.CreateReflection(new Plane(0, 1, 0, 0)) * matrix;
                     break;
 
                 case TokenType.Fz:
-                    matrix *= Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0));
+                    matrix = Matrix4x4.CreateReflection(new Plane(0, 0, 1, 0)) * matrix;
                     break;
 
                 case TokenType.Hue:

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -34,6 +35,40 @@ box"[2..];
             Assert.AreEqual(TokenType.Box, tt);
             Assert.AreEqual(Matrix4x4.Identity, mtx);
         }
+
+        [TestMethod]
+        public void TestMatrixOrder()
+        {
+            string testScript = @"
+{rz 90 y 1} box"[2..];
+            Matrix4x4 mtx = Matrix4x4.Identity;
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder();
+            builder.DrawEvent += ((s, a) =>
+            {
+                mtx = a.Matrix;
+            });
+
+            builder.Build(tr);
+            var v = new Vector3(1, 0, 0);
+            var xfm = Vector3.Transform(v, mtx);
+            Assert.IsTrue(VerifyNear(-1, 1, 0, xfm));
+
+            testScript = @"
+{y 1 rz 90} box"[2..];
+            tr = new StringReader(testScript);
+            builder.Build(tr);
+            xfm = Vector3.Transform(v, mtx);
+            Assert.IsTrue(VerifyNear(0, 2, 0, xfm));
+
+        }
+
+        bool VerifyNear(int x, int y, int z, Vector3 vec)
+        {
+            return Math.Abs(x - vec.X) + Math.Abs(y - vec.Y) + Math.Abs(z - vec.Z) < 0.001;
+        }
+
 
         [TestMethod]
         public void TestTransformDraw()
