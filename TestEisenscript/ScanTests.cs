@@ -118,12 +118,14 @@ maizeyellow
         public void TestKeywordsVariables()
         {
             string testScriptKeywords = @"
-* #define {} md w b a set rule maxdepth
+* #define {} [] md w b a set rule maxdepth
 maxobjects minsize maxsize seed initial background weight
 x y z rx ry rz s m fx fy fz hue sat brightness alpha color
 blend random  randomhue randomrgb greyscale 
 colorpool box grid sphere line point triangle
-mesh cylinder tube
+mesh cylinder tube translation rotation
+pivot scale
+
 
 // Now some variables
 white24
@@ -142,12 +144,14 @@ rabbit
             Assert.AreEqual(TokenType.Define, tokens[1].Type);
             Assert.AreEqual(TokenType.OpenBrace, tokens[2].Type);
             Assert.AreEqual(TokenType.CloseBrace, tokens[3].Type);
-            Assert.AreEqual(TokenType.MaxDepth, tokens[4].Type);
-            Assert.AreEqual(TokenType.Weight, tokens[5].Type);
-            Assert.AreEqual(TokenType.Brightness, tokens[6].Type);
-            Assert.AreEqual(TokenType.Alpha, tokens[7].Type);
+            Assert.AreEqual(TokenType.OpenBracket, tokens[4].Type);
+            Assert.AreEqual(TokenType.CloseBracket, tokens[5].Type);
+            Assert.AreEqual(TokenType.MaxDepth, tokens[6].Type);
+            Assert.AreEqual(TokenType.Weight, tokens[7].Type);
+            Assert.AreEqual(TokenType.Brightness, tokens[8].Type);
+            Assert.AreEqual(TokenType.Alpha, tokens[9].Type);
 
-            var offset = 8 - (int)TokenType.Set;
+            var offset = 10 - (int)TokenType.Set;
 
             for (var i = (int)TokenType.Set; i < (int)TokenType.End; i++)
             {
@@ -170,7 +174,7 @@ rabbit
             Assert.AreEqual(TokenType.Variable, tokens[iCur].Type);
             Assert.AreEqual("rabbit", tokens[iCur++].Name);
             Assert.AreEqual(1, scanner.Exceptions.Count);
-            Assert.AreEqual(13, scanner.Exceptions[0].Line);
+            Assert.AreEqual(15, scanner.Exceptions[0].Line);
         }
     }
 }

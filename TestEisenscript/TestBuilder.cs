@@ -39,6 +39,8 @@ box"[2..];
         [TestMethod]
         public void TestMatrixOrder()
         {
+            // Per Structure Synth, transforms are applied right to left so this should raise (1, 0) to
+            // (1, 1) and then rotate 90 deg to (-1,1)...
             string testScript = @"
 {rz 90 y 1} box"[2..];
             Matrix4x4 mtx = Matrix4x4.Identity;
@@ -55,6 +57,7 @@ box"[2..];
             var xfm = Vector3.Transform(v, mtx);
             Assert.IsTrue(VerifyNear(-1, 1, 0, xfm));
 
+            // ...while this should rotate 90 deg to (0, 1) and then raise to (0, 2).
             testScript = @"
 {y 1 rz 90} box"[2..];
             tr = new StringReader(testScript);

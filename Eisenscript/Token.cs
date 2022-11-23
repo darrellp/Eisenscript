@@ -4,17 +4,20 @@ namespace Eisenscript
 {
     public enum TokenType
     {
-        // ReSharper disable UnusedMember.Global
+        // ReSharper disable IdentifierTypo
         White,
         Comment,
         Error,
         Mult,
+        Colon,
         Greater,
         List,
         Image,
         Define,
         OpenBrace,
         CloseBrace,
+        OpenBracket,
+        CloseBracket,
         Comma,
         Number,
         Rgba,
@@ -60,8 +63,12 @@ namespace Eisenscript
         Mesh,
         Cylinder,
         Tube,
+        Translation,
+        Rotation,
+        Pivot,
+        Scale,
         End
-        // ReSharper restore UnusedMember.Global
+        // ReSharper restore IdentifierTypo
     }
 
     internal readonly struct Token
@@ -130,12 +137,15 @@ namespace Eisenscript
         {
             // Tokens whose name isn't the same as the string
             Trie.Insert("*", TokenType.Mult);
+            Trie.Insert(":", TokenType.Colon);
             Trie.Insert(">", TokenType.Greater);
             Trie.Insert("list:", TokenType.List);
             Trie.Insert("image:", TokenType.Image);
             Trie.Insert("#define", TokenType.Define);
             Trie.Insert("{", TokenType.OpenBrace);
             Trie.Insert("}", TokenType.CloseBrace);
+            Trie.Insert("[", TokenType.OpenBracket);
+            Trie.Insert("]", TokenType.CloseBracket);
             Trie.Insert(",", TokenType.Comma);
 
             // Abbreviations
