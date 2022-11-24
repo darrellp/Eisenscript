@@ -12,6 +12,7 @@ namespace Eisenscript
         public int MaxObjects { get; set; } = int.MaxValue;
         public double MinSize { get; set; } = int.MaxValue;
         public double MaxSize { get; set; } = int.MinValue;
+        public CameraInfo CamInfo { get; } = new();
 
         public int SeedInit
         {

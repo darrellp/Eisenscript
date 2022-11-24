@@ -94,6 +94,40 @@ namespace Eisenscript
             var token = _scan.Next();
             switch (token.Type)
             {
+                case TokenType.Translation:
+                    rules.CamInfo.Translation = new double[3];
+                    _scan.Consume(TokenType.OpenBracket);
+                    for (var iVal = 0; iVal < 3; iVal++)
+                    {
+                        rules.CamInfo.Translation[iVal] = _scan.NextDouble();
+                    }
+                    _scan.Consume(TokenType.CloseBracket);
+                    break;
+
+                case TokenType.Rotation:
+                    rules.CamInfo.Rotation = new double[9];
+                    _scan.Consume(TokenType.OpenBracket);
+                    for (var iVal = 0; iVal < 9; iVal++)
+                    {
+                        rules.CamInfo.Rotation[iVal] = _scan.NextDouble();
+                    }
+                    _scan.Consume(TokenType.CloseBracket);
+                    break;
+
+                case TokenType.Pivot:
+                    rules.CamInfo.Pivot = new double[3];
+                    _scan.Consume(TokenType.OpenBracket);
+                    for (var iVal = 0; iVal < 3; iVal++)
+                    {
+                        rules.CamInfo.Pivot[iVal] = _scan.NextDouble();
+                    }
+                    _scan.Consume(TokenType.CloseBracket);
+                    break;
+
+                case TokenType.Scale:
+                    rules.CamInfo.Scale = _scan.NextDouble();
+                    break;
+
                 case TokenType.MaxDepth:
                     rules.MaxDepth = _scan.NextInt();
                     break;

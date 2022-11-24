@@ -37,6 +37,36 @@ box"[2..];
         }
 
         [TestMethod]
+        public void TestCameraInfo()
+        {
+            var testScript = @"
+set translation [1 1 1]
+set rotation [1 1 1 1 1 1 1 1 1]
+set pivot [1 1 1]
+set scale 1
+"[2..];
+            var camInfo = new CameraInfo();
+
+            var tr = new StringReader(testScript);
+            var builder = new SSBuilder();
+            builder.CameraInfoEvent += ((s, a) =>
+            {
+                camInfo = a.CamInfo;
+            });
+
+            var rules = builder.Build(tr);
+            Assert.IsTrue(rules.Count == 0);
+            Assert.IsNotNull(camInfo.Translation);
+            Assert.IsTrue(camInfo.Translation.All(n => n == 1));
+            Assert.IsNotNull(camInfo.Rotation);
+            Assert.IsTrue(camInfo.Rotation.All(n => n == 1));
+            Assert.IsNotNull(camInfo.Pivot);
+            Assert.IsTrue(camInfo.Pivot.All(n => n == 1));
+            Assert.IsNotNull(camInfo.Scale);
+            Assert.AreEqual(1, camInfo.Scale);
+        }
+
+        [TestMethod]
         public void TestMatrixOrder()
         {
             // Per Structure Synth, transforms are applied right to left so this should raise (1, 0) to
